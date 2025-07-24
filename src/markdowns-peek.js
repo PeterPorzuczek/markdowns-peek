@@ -12,12 +12,26 @@ class GitHubMarkdownViewer {
     this.containerId = options.containerId || 'markdowns-peek';
     this.theme = options.theme || 'dark';
     this.height = options.height || '600px';
+    this.disableStyles = options.disableStyles || false;
     
     this.container = null;
     this.currentFile = null;
     this.files = [];
     
     this.init();
+  }
+
+  updateTextWidth() {
+    const body = this.container.querySelector('.gmv-body');
+    const text = this.container.querySelector('.gmv-text');
+    if (!body || !text) return;
+    const styles = getComputedStyle(body);
+    const paddingLeft = parseFloat(styles.paddingLeft) || 0;
+    const paddingRight = parseFloat(styles.paddingRight) || 0;
+    const width = body.clientWidth - paddingLeft - paddingRight - 10;
+    if (width > 0) {
+      text.style.width = `${width}px`;
+    }
   }
 
   init() {
@@ -29,7 +43,46 @@ class GitHubMarkdownViewer {
     
     this.injectStyles();
     this.render();
+    this.setupMobileMenu();
     this.loadDirectory();
+    this.updateTextWidth(); // Wywołanie na starcie
+    window.addEventListener('resize', this.updateTextWidth.bind(this)); // Nasłuchiwanie zdarzenia resize
+  }
+  
+  setupMobileMenu() { // <- Przywrócona metoda
+    const menuToggle = this.container.querySelector('.gmv-menu-toggle');
+    const filesPanel = this.container.querySelector('.gmv-files');
+    const overlay = this.container.querySelector('.gmv-files-overlay');
+    
+    if (menuToggle && filesPanel && overlay) {
+      // Toggle menu
+      menuToggle.addEventListener('click', () => {
+        filesPanel.classList.toggle('active');
+        overlay.classList.toggle('active');
+        this.updateTextWidth();
+      });
+      
+      // Close menu when clicking overlay
+      overlay.addEventListener('click', () => {
+        filesPanel.classList.remove('active');
+        overlay.classList.remove('active');
+        this.updateTextWidth();
+      });
+      
+      // Close menu when selecting a file
+      filesPanel.addEventListener('click', (e) => {
+        if (e.target.closest('.gmv-file')) {
+          // Only close on mobile
+          if (window.innerWidth <= 768) {
+            setTimeout(() => {
+              filesPanel.classList.remove('active');
+              overlay.classList.remove('active');
+              this.updateTextWidth();
+            }, 100);
+          }
+        }
+      });
+    }
   }
 
   formatFileName(filename) {
@@ -52,6 +105,9 @@ class GitHubMarkdownViewer {
   }
 
   injectStyles() {
+    // Skip style injection if disableStyles is true
+    if (this.disableStyles) return;
+    
     if (document.getElementById('markdowns-peek-styles')) return;
     
     const styles = document.createElement('style');
@@ -73,6 +129,16 @@ class GitHubMarkdownViewer {
         box-sizing: border-box;
       }
       
+      /* Ensure nothing overflows the container */
+      .gmv-container {
+        overflow: hidden;
+      }
+      
+      /* Global overflow prevention for all elements */
+      .gmv-text * {
+        max-width: 99%;
+      }
+      
       /* Left Panel */
       .gmv-files {
         width: 240px;
@@ -82,6 +148,7 @@ class GitHubMarkdownViewer {
         overflow-x: hidden;
         flex-shrink: 0;
         -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
       }
       
       .gmv-files::-webkit-scrollbar {
@@ -124,6 +191,9 @@ class GitHubMarkdownViewer {
         font-weight: 600;
         letter-spacing: 0.03em;
         margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       
       .gmv-file-meta {
@@ -139,11 +209,13 @@ class GitHubMarkdownViewer {
         flex-direction: column;
         overflow: hidden;
         background: #000;
+        position: relative;
       }
       
       .gmv-header {
         padding: 40px 50px 30px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-sizing: border-box;
       }
       
       .gmv-title {
@@ -151,6 +223,11 @@ class GitHubMarkdownViewer {
         font-weight: 700;
         letter-spacing: -0.02em;
         margin-bottom: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        cursor: default;
       }
       
       .gmv-info {
@@ -170,37 +247,27 @@ class GitHubMarkdownViewer {
         padding: 40px 50px 60px;
         -webkit-overflow-scrolling: touch;
         box-sizing: border-box;
-        padding-right: 8px;
-      }
-      .gmv-body:hover {
-        padding-right: 8px;
-      }
-      @media (max-width: 768px) {
-        .gmv-body {
-          padding: 30px 20px 40px 20px;
-          padding-right: calc(20px + 8px);
-        }
-      }
-      @media (max-width: 480px) {
-        .gmv-body {
-          padding: 20px 16px 30px 16px;
-          padding-right: calc(16px + 8px);
-        }
+        padding-right: 8px; /* Stały padding na desktopie */
       }
       
       .gmv-body::-webkit-scrollbar {
-        width: 1px;
+        width: 1px; /* Domyślnie bardzo cienki */
+        background: transparent;
         transition: width 0.2s;
       }
       .gmv-body:hover::-webkit-scrollbar {
-        width: 8px;
+        width: 8px; /* Na hover staje się szeroki */
       }
       .gmv-body::-webkit-scrollbar-thumb {
         background: #333;
         border-radius: 4px;
-        transition: background 0.2s;
+        opacity: 0; /* Domyślnie niewidoczny */
+        pointer-events: none; /* Nieklikalny, gdy niewidoczny */
+        transition: opacity 0.2s, background 0.2s;
       }
       .gmv-body:hover::-webkit-scrollbar-thumb {
+        opacity: 1; /* Pojawia się na hover */
+        pointer-events: auto; /* Staje się klikalny na hover */
         background: #444;
       }
       
@@ -208,6 +275,12 @@ class GitHubMarkdownViewer {
         max-width: 900px;
         line-height: 1.6;
         font-size: 15px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        padding: 0;
+        margin: 0 auto;
+        box-sizing: border-box;
+        margin-left: 0;
       }
       
       .gmv-text h1,
@@ -216,6 +289,8 @@ class GitHubMarkdownViewer {
         font-weight: 700;
         letter-spacing: -0.02em;
         margin: 2.5em 0 1em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
       
       .gmv-text h1:first-child,
@@ -230,6 +305,8 @@ class GitHubMarkdownViewer {
       .gmv-text p {
         margin-bottom: 1.2em;
         color: rgba(255, 255, 255, 0.8);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
       
       .gmv-text code {
@@ -237,6 +314,7 @@ class GitHubMarkdownViewer {
         padding: 2px 4px;
         font-family: 'SF Mono', Consolas, monospace;
         font-size: 0.85em;
+        word-break: break-word;
       }
       
       .gmv-text pre {
@@ -247,6 +325,13 @@ class GitHubMarkdownViewer {
         margin: 1.5em 0;
         font-size: 13px;
         line-height: 1.4;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .gmv-text pre code {
+        word-break: normal;
+        white-space: pre;
       }
       
       .gmv-text blockquote {
@@ -254,6 +339,8 @@ class GitHubMarkdownViewer {
         padding-left: 20px;
         margin: 1.5em 0;
         color: #999;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
       
       .gmv-text a {
@@ -261,23 +348,31 @@ class GitHubMarkdownViewer {
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-underline-offset: 2px;
+        word-break: break-word;
+        overflow-wrap: break-word;
       }
       
       .gmv-text ul,
       .gmv-text ol {
         margin-bottom: 1.2em;
         padding-left: 20px;
+        max-width: 100%;
       }
       
       .gmv-text li {
         margin-bottom: 0.3em;
         color: rgba(255, 255, 255, 0.8);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
       
       .gmv-text table {
         width: 100%;
         margin: 1.5em 0;
         font-size: 14px;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
       
       .gmv-text th,
@@ -285,6 +380,8 @@ class GitHubMarkdownViewer {
         padding: 8px 12px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         text-align: left;
+        word-break: break-word;
+        overflow-wrap: break-word;
       }
       
       .gmv-text th {
@@ -294,6 +391,31 @@ class GitHubMarkdownViewer {
         letter-spacing: 0.03em;
       }
       
+      /* Images */
+      .gmv-text img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1.5em 0;
+      }
+      
+      /* Horizontal rule */
+      .gmv-text hr {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 2em 0;
+      }
+      
+      /* Mobile-specific text adjustments */
+      @media (max-width: 768px) {
+        .gmv-text h4,
+        .gmv-text h5,
+        .gmv-text h6 {
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+      }
+
       /* Empty State */
       .gmv-empty {
         flex: 1;
@@ -406,7 +528,6 @@ class GitHubMarkdownViewer {
       .gmv-container.light .gmv-body::-webkit-scrollbar-thumb {
         background: #ccc;
       }
-      
       .gmv-container.light .gmv-body:hover::-webkit-scrollbar-thumb {
         background: #bbb;
       }
@@ -414,6 +535,131 @@ class GitHubMarkdownViewer {
       .gmv-container.light .gmv-progress {
         background: #000;
       }
+      
+      /* Mobile Styles - Przywrócone */
+      .gmv-menu-toggle {
+        display: none; /* Domyślnie ukryty na desktopie */
+        position: absolute; /* Pozycjonowany względem .gmv-container */
+        top: 20px;
+        left: 20px;
+        z-index: 101; /* Niżej niż progress bar, wyżej niż content */
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: #fff;
+        transition: all 0.2s ease;
+      }
+      .gmv-menu-toggle:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .gmv-container.light .gmv-menu-toggle {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: rgba(0, 0, 0, 0.1);
+        color: #000;
+      }
+      .gmv-container.light .gmv-menu-toggle:hover {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      .gmv-files-overlay {
+        display: none; /* Domyślnie ukryty */
+        position: absolute; /* Pozycjonowany względem .gmv-container */
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 100; /* Niżej niż menu panel */
+      }
+      @media (max-width: 768px) {
+        .gmv-container {
+          flex-direction: column;
+        }
+        .gmv-menu-toggle {
+          display: block; /* Pokazany na mobile */
+        }
+        .gmv-files {
+          position: absolute; /* Wysuwa się */
+          top: 0;
+          left: -100%;
+          width: 280px;
+          height: 100%;
+          z-index: 100; /* Wyżej niż overlay */
+          transition: left 0.3s ease;
+          box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .gmv-files.active {
+          left: 0; /* Wysunięty */
+        }
+        .gmv-files-overlay.active {
+          display: block; /* Widoczny, gdy menu aktywne */
+        }
+        .gmv-content {
+          width: 100%;
+          padding-top: 60px; /* Miejsce na przycisk menu */
+        }
+        .gmv-header {
+          padding: 30px 20px 20px;
+        }
+        .gmv-title {
+          font-size: 28px;
+          white-space: normal; /* Zawija tekst */
+          word-wrap: break-word;
+        }
+        .gmv-body {
+          padding: 30px 20px 40px 20px;
+          padding-right: calc(20px + 8px); /* Padding + miejsce na scrollbar */
+        }
+        .gmv-text {
+          font-size: 14px;
+          padding: 0 10px;
+        }
+        .gmv-text h1 { font-size: 24px; }
+        .gmv-text h2 { font-size: 18px; }
+        .gmv-text h3 { font-size: 16px; }
+        .gmv-text pre {
+          padding: 12px 16px;
+          font-size: 12px;
+        }
+        .gmv-text table {
+          font-size: 12px;
+          display: block;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+      @media (max-width: 480px) {
+        .gmv-files {
+          width: 260px;
+        }
+        .gmv-header {
+          padding: 20px 10px 10px;
+        }
+        .gmv-title {
+          font-size: 22px;
+        }
+        .gmv-body {
+          padding: 20px 8px 30px 8px;
+          padding-right: calc(8px + 8px); /* Padding + miejsce na scrollbar */
+        }
+        .gmv-text {
+          padding: 0 5px;
+        }
+        .gmv-text h1 { font-size: 20px; }
+        .gmv-text h2 { font-size: 16px; }
+        .gmv-text h3 { font-size: 14px; }
+        .gmv-text code {
+          font-size: 0.8em;
+        }
+        .gmv-text pre {
+          padding: 10px 12px;
+          font-size: 11px;
+        }
+      }
+
     `;
     document.head.appendChild(styles);
   }
@@ -425,6 +671,8 @@ class GitHubMarkdownViewer {
     this.container.innerHTML = `
       <div class="gmv-container ${this.theme}">
         <div class="gmv-progress"></div>
+        <button class="gmv-menu-toggle">MENU</button> <!-- Przywrócony przycisk -->
+        <div class="gmv-files-overlay"></div> <!-- Przywrócony overlay -->
         
         <aside class="gmv-files">
           <div class="gmv-label">FILES</div>
@@ -553,6 +801,8 @@ class GitHubMarkdownViewer {
           </div>
         </article>
       `;
+      // Ustaw początkową szerokość tekstu
+      this.updateTextWidth();
       // Add scroll tracking
       const body = content.querySelector('.gmv-body');
       body.addEventListener('scroll', () => {
