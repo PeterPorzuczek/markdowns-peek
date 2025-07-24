@@ -6,10 +6,13 @@ A beautiful and easy-to-use GitHub Markdown file viewer for web applications. Di
 
 - 📁 Browse markdown files from any GitHub repository
 - 🎨 Beautiful UI with light/dark theme support
-- 📱 Responsive design
+- 📱 **Mobile responsive design** with touch-friendly navigation
 - 🔒 Support for private repositories (with token)
 - ⚡ Lightweight and fast
 - 🎯 Easy to integrate
+- 📊 Reading time estimation for each document
+- 📈 Progress indicator while reading
+- 🍔 Mobile hamburger menu for seamless navigation
 
 ## Installation
 
@@ -68,7 +71,8 @@ const viewer = new GitHubMarkdownViewer({
   branch: 'main',              // default: 'main'
   path: 'doc',                 // default: '' (root)
   token: 'your-github-token',  // for private repos
-  theme: 'dark'                // 'light' or 'dark', default: 'light'
+  theme: 'dark',               // 'light' or 'dark', default: 'light'
+  disableStyles: false         // set to true to disable default styles
 });
 ```
 
@@ -119,16 +123,56 @@ The viewer comes with default styles, but you can customize it using CSS:
   height: 800px !important;
 }
 
-/* Sidebar width */
-.gmv-sidebar {
-  width: 350px !important;
+/* Sidebar width (desktop only) */
+@media (min-width: 769px) {
+  .gmv-files {
+    width: 350px !important;
+  }
 }
 
 /* Custom theme colors */
 .gmv-container.dark {
   background: #1a1a1a !important;
 }
+
+/* Mobile menu button styling */
+.gmv-menu-toggle {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
 ```
+
+### Mobile Responsiveness
+
+The viewer is fully responsive and optimized for mobile devices:
+
+- **Tablets (< 768px)**: Side panel becomes a slide-out menu
+- **Phones (< 480px)**: Optimized typography and spacing
+- **Touch devices**: Larger tap targets for better usability
+
+The mobile menu can be toggled using the hamburger button that appears in the top-left corner on mobile devices.
+
+### Disabling Default Styles
+
+If you want to use your own CSS styles, you can disable the default styles:
+
+```javascript
+const viewer = new GitHubMarkdownViewer({
+  containerId: 'markdown-viewer',
+  owner: 'facebook',
+  repo: 'react',
+  disableStyles: true  // Disable all default styles
+});
+```
+
+When `disableStyles` is set to `true`, you'll need to provide your own CSS. The viewer uses the following class structure:
+
+- `.gmv-container` - Main container
+- `.gmv-files` - File list sidebar
+- `.gmv-content` - Content area
+- `.gmv-menu-toggle` - Mobile menu button
+- `.gmv-header` - Document header
+- `.gmv-body` - Document body
+- `.gmv-text` - Markdown content
 
 ## Private Repositories
 

@@ -84,6 +84,45 @@
         .example-btn:hover {
             background: #d1d5da;
         }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .demo-controls {
+                padding: 15px;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            input, button {
+                width: 100%;
+            }
+            
+            .examples {
+                gap: 8px;
+            }
+            
+            .example-btn {
+                flex: 1 1 calc(50% - 4px);
+                min-width: 0;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .example-btn {
+                flex: 1 1 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -134,6 +173,7 @@
             repo: 'react',
             theme: 'light',
             token: ''
+            // disableStyles: true  // Uncomment to use custom CSS instead of default styles
         });
         
         // Load repository function

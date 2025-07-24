@@ -169,14 +169,39 @@ class GitHubMarkdownViewer {
         overflow-x: hidden;
         padding: 40px 50px 60px;
         -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
+        padding-right: 8px;
+      }
+      .gmv-body:hover {
+        padding-right: 8px;
+      }
+      @media (max-width: 768px) {
+        .gmv-body {
+          padding: 30px 20px 40px 20px;
+          padding-right: calc(20px + 8px);
+        }
+      }
+      @media (max-width: 480px) {
+        .gmv-body {
+          padding: 20px 16px 30px 16px;
+          padding-right: calc(16px + 8px);
+        }
       }
       
       .gmv-body::-webkit-scrollbar {
         width: 1px;
+        transition: width 0.2s;
       }
-      
+      .gmv-body:hover::-webkit-scrollbar {
+        width: 8px;
+      }
       .gmv-body::-webkit-scrollbar-thumb {
         background: #333;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+      .gmv-body:hover::-webkit-scrollbar-thumb {
+        background: #444;
       }
       
       .gmv-text {
@@ -302,11 +327,14 @@ class GitHubMarkdownViewer {
         top: 0;
         left: 0;
         right: 0;
+        width: 100%;
         height: 1px;
         background: #fff;
         transform-origin: left;
         transform: scaleX(0);
         transition: transform 0.3s ease;
+        z-index: 1002;
+        pointer-events: none;
       }
       
       /* Light theme */
@@ -379,6 +407,10 @@ class GitHubMarkdownViewer {
         background: #ccc;
       }
       
+      .gmv-container.light .gmv-body:hover::-webkit-scrollbar-thumb {
+        background: #bbb;
+      }
+      
       .gmv-container.light .gmv-progress {
         background: #000;
       }
@@ -413,33 +445,25 @@ class GitHubMarkdownViewer {
 
   async loadDirectory() {
     const filesList = this.container.querySelector('.gmv-files-list');
-    
     try {
       const headers = {
         'Accept': 'application/vnd.github.v3+json'
       };
-      
       if (this.token) {
         headers['Authorization'] = `token ${this.token}`;
       }
-      
       const response = await fetch(
         `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.path}?ref=${this.branch}`,
         { headers }
       );
-      
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      
       const data = await response.json();
-      
       this.files = data.filter(file => 
         file.type === 'file' && file.name.toLowerCase().endsWith('.md')
       );
-      
       this.renderFileList();
-      
     } catch (error) {
       filesList.innerHTML = `<div class="gmv-error">ERROR: ${error.message}</div>`;
     }
@@ -447,35 +471,29 @@ class GitHubMarkdownViewer {
 
   renderFileList() {
     const filesList = this.container.querySelector('.gmv-files-list');
-    
     if (this.files.length === 0) {
       filesList.innerHTML = '<div class="gmv-error">NO FILES FOUND</div>';
       return;
     }
-    
     const filesHtml = this.files.map((file, index) => {
       const displayName = this.formatFileName(file.name);
       const size = this.formatFileSize(file.size);
-      
       return `
         <div class="gmv-file" data-path="${file.path}" data-index="${index}">
-          <div class="gmv-file-name">${displayName}</div>
+          <div class="gmv-file-name" title="${displayName}">${displayName}</div>
           <div class="gmv-file-meta">
             <span class="gmv-size">${size}</span>
           </div>
         </div>
       `;
     }).join('');
-    
     filesList.innerHTML = filesHtml;
-    
     const self = this;
     filesList.querySelectorAll('.gmv-file').forEach(item => {
       item.addEventListener('click', function() {
         self.loadFile(this.dataset.path);
       });
     });
-    
     // Load first file
     if (this.files.length > 0) {
       setTimeout(() => {
@@ -488,66 +506,53 @@ class GitHubMarkdownViewer {
     const content = this.container.querySelector('.gmv-content');
     const files = this.container.querySelectorAll('.gmv-file');
     const progress = this.container.querySelector('.gmv-progress');
-    
     // Update active state
     files.forEach(file => {
       file.classList.toggle('active', file.dataset.path === path);
     });
-    
     // Reset progress
     progress.style.transform = 'scaleX(0)';
-    
     // Show loading
     content.innerHTML = '<div class="gmv-empty">LOADING...</div>';
-    
     try {
       const headers = {
         'Accept': 'application/vnd.github.v3+json'
       };
-      
       if (this.token) {
         headers['Authorization'] = `token ${this.token}`;
       }
-      
       const response = await fetch(
         `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}?ref=${this.branch}`,
         { headers }
       );
-      
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      
       const data = await response.json();
       const decodedContent = atob(data.content);
       const textContent = decodeURIComponent(escape(decodedContent));
-      
       const readingTime = this.calculateReadingTime(textContent);
       const htmlContent = marked(textContent);
       const sanitizedHtml = DOMPurify.sanitize(htmlContent);
-      
       let title = this.formatFileName(data.name);
       const firstH1 = textContent.match(/^#\s+(.+)$/m);
       if (firstH1) {
         title = firstH1[1].toUpperCase();
       }
-      
       content.innerHTML = `
         <header class="gmv-header">
-          <h1 class="gmv-title">${title}</h1>
+          <h1 class="gmv-title" title="${title}">${title}</h1>
           <div class="gmv-info">
             <span>${readingTime} MIN READ</span>
             <span>${this.formatFileSize(data.size)}</span>
           </div>
         </header>
-        
         <article class="gmv-body">
           <div class="gmv-text">
             ${sanitizedHtml}
           </div>
         </article>
       `;
-      
       // Add scroll tracking
       const body = content.querySelector('.gmv-body');
       body.addEventListener('scroll', () => {
@@ -556,9 +561,7 @@ class GitHubMarkdownViewer {
         const percentage = height > 0 ? scrolled / height : 0;
         progress.style.transform = `scaleX(${percentage})`;
       });
-      
       this.currentFile = path;
-      
     } catch (error) {
       content.innerHTML = `<div class="gmv-empty">ERROR: ${error.message}</div>`;
     }
@@ -569,13 +572,11 @@ class GitHubMarkdownViewer {
     this.theme = this.theme === 'light' ? 'dark' : 'light';
     container.classList.remove('light', 'dark');
     container.classList.add(this.theme);
-    
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('gmv-theme', this.theme);
     }
   }
 
-  // Public API
   setRepository(owner, repo, options = {}) {
     this.owner = owner;
     this.repo = repo;
