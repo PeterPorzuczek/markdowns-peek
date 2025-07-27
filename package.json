@@ -13,7 +13,9 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "test": "jest",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
     "preserve": "npm run build && rimraf example/dist && copyfiles dist/**/* example",
     "serve": "npx serve example"
   },
@@ -41,7 +43,12 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "copyfiles": "^2.4.1",
+    "jest": "^30.0.5",
+    "jest-cucumber": "^4.5.0",
+    "jest-environment-jsdom": "^30.0.5",
+    "jsdom": "^26.1.0",
     "rimraf": "^6.0.1",
-    "rollup": "^4.9.6"
+    "rollup": "^4.9.6",
+    "text-encoding": "^0.7.0"
   }
 }

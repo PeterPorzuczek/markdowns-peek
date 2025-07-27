@@ -525,3 +525,5 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
   window.MarkdownsPeek = MarkdownsPeek;
 }
+
+export { MarkdownsPeek };
