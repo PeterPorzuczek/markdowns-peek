@@ -1,4 +1,4 @@
-// index.js - Entry point for the package
+
 import MarkdownsPeek from './src/markdowns-peek.js';
 
 export default MarkdownsPeek;

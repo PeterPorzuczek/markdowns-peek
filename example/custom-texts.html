@@ -53,6 +53,11 @@
             <h2>Custom Polish Texts</h2>
             <div id="markdowns-peek-polish"></div>
         </div>
+
+        <div class="example">
+          <h2>Vanilla Texts</h2>
+          <div id="markdowns-peek-vanilla"></div>
+      </div>
     </div>
 
     <script src="dist/markdowns-peek.js"></script>
@@ -81,6 +86,24 @@
                 error: 'BŁĄD: ',
                 noFiles: 'NIE ZNALEZIONO PLIKÓW',
                 minRead: 'MIN CZYTANIA'
+            }
+        });
+
+        // No texts
+            new MarkdownsPeek({
+            containerId: 'markdowns-peek-vanilla',
+            owner: 'facebook',
+            repo: 'react',
+            theme: 'light',
+            prefix: 'vanilla-',
+            texts: {
+                menu: '',
+                files: '',
+                loading: '',
+                selectFile: '',
+                error: '',
+                noFiles: '',
+                minRead: ''
             }
         });
     </script>

@@ -52,4 +52,31 @@ export const createNoFilesTemplate = (texts, prefix) => `
 
 export const createLoadingTemplate = (texts, prefix) => `
   <div class="${prefix}empty">${texts.loading}</div>
+`;
+
+export const createInitialLoaderTemplate = (theme) => `
+  <div style="
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: ${theme === 'dark' ? '#1a1a1a' : '#ffffff'};
+    color: ${theme === 'dark' ? '#ffffff' : '#333333'};
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  ">
+    <div style="
+      width: 40px;
+      height: 40px;
+      border: 3px solid ${theme === 'dark' ? '#333333' : '#e0e0e0'};
+      border-top: 3px solid ${theme === 'dark' ? '#ffffff' : '#333333'};
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    "></div>
+  </div>
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 `; 

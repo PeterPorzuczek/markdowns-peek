@@ -1,4 +1,4 @@
-// markdowns-peek utilities
+
 
 export const generateRandomChars = (length = 8) => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
