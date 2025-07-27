@@ -249,96 +249,99 @@ class MarkdownsPeek {
 
   
   setupMobileMenu() {
-    const menuToggle = this.container.querySelector(`[class~="${this.prefix}menu-toggle"]`);
-    const filesPanel = this.container.querySelector(`[class~="${this.prefix}files"]`);
-    const overlay = this.container.querySelector(`[class~="${this.prefix}files-overlay"]`);
+    const elements = this.findMobileMenuElements();
+    if (elements.menuToggle && elements.filesPanel && elements.overlay) {
+      this.attachMobileMenuEventListeners(elements);
+    }
+  }
+
+  findMobileMenuElements() {
+    const primaryElements = this.findPrimaryMenuElements();
+    if (primaryElements.menuToggle && primaryElements.filesPanel && primaryElements.overlay) {
+      return primaryElements;
+    }
     
-    if (menuToggle && filesPanel && overlay) {
-      menuToggle.addEventListener('click', () => {
-        filesPanel.classList.toggle('active');
-        overlay.classList.toggle('active');
-        this.updateTextWidth();
-      });
-      
-      overlay.addEventListener('click', () => {
-        filesPanel.classList.remove('active');
-        overlay.classList.remove('active');
-        this.updateTextWidth();
-      });
-      
-      filesPanel.addEventListener('click', (e) => {
-        if (e.target.closest(`[class~="${this.prefix}file"]`)) {
-          if (window.innerWidth <= 768) {
-              filesPanel.classList.remove('active');
-              overlay.classList.remove('active');
-              this.updateTextWidth();
-          }
-        }
-      });
-    } else {
-      const fallbackMenuToggle = this.container.querySelector(`.${this.prefix}menu-toggle`);
-      const fallbackFilesPanel = this.container.querySelector(`.${this.prefix}files`);
-      const fallbackOverlay = this.container.querySelector(`.${this.prefix}files-overlay`);
-      
-      if (fallbackMenuToggle && fallbackFilesPanel && fallbackOverlay) {
-        fallbackMenuToggle.addEventListener('click', () => {
-          fallbackFilesPanel.classList.toggle('active');
-          fallbackOverlay.classList.toggle('active');
+    const fallbackElements = this.findFallbackMenuElements();
+    if (fallbackElements.menuToggle && fallbackElements.filesPanel && fallbackElements.overlay) {
+      return fallbackElements;
+    }
+    
+    return this.findUniversalMenuElements();
+  }
+
+  findPrimaryMenuElements() {
+    return {
+      menuToggle: this.container.querySelector(`[class~="${this.prefix}menu-toggle"]`),
+      filesPanel: this.container.querySelector(`[class~="${this.prefix}files"]`),
+      overlay: this.container.querySelector(`[class~="${this.prefix}files-overlay"]`)
+    };
+  }
+
+  findFallbackMenuElements() {
+    return {
+      menuToggle: this.container.querySelector(`.${this.prefix}menu-toggle`),
+      filesPanel: this.container.querySelector(`.${this.prefix}files`),
+      overlay: this.container.querySelector(`.${this.prefix}files-overlay`)
+    };
+  }
+
+  findUniversalMenuElements() {
+    const allElements = this.container.querySelectorAll('*');
+    return {
+      menuToggle: Array.from(allElements).find(el => 
+        el.className && el.className.includes('menu-toggle')
+      ),
+      filesPanel: Array.from(allElements).find(el => 
+        el.className && el.className.includes('files') && !el.className.includes('files-list') && !el.className.includes('files-overlay')
+      ),
+      overlay: Array.from(allElements).find(el => 
+        el.className && el.className.includes('files-overlay')
+      )
+    };
+  }
+
+  attachMobileMenuEventListeners(elements) {
+    this.attachMenuToggleListener(elements.menuToggle, elements.filesPanel, elements.overlay);
+    this.attachOverlayClickListener(elements.overlay, elements.filesPanel);
+    this.attachFilesPanelClickListener(elements.filesPanel, elements.overlay);
+  }
+
+  attachMenuToggleListener(menuToggle, filesPanel, overlay) {
+    menuToggle.addEventListener('click', () => {
+      filesPanel.classList.toggle('active');
+      overlay.classList.toggle('active');
+      this.updateTextWidth();
+    });
+  }
+
+  attachOverlayClickListener(overlay, filesPanel) {
+    overlay.addEventListener('click', () => {
+      filesPanel.classList.remove('active');
+      overlay.classList.remove('active');
+      this.updateTextWidth();
+    });
+  }
+
+  attachFilesPanelClickListener(filesPanel, overlay) {
+    filesPanel.addEventListener('click', (e) => {
+      if (this.isFileElementClicked(e)) {
+        if (window.innerWidth <= 768) {
+          filesPanel.classList.remove('active');
+          overlay.classList.remove('active');
           this.updateTextWidth();
-        });
-        
-        fallbackOverlay.addEventListener('click', () => {
-          fallbackFilesPanel.classList.remove('active');
-          fallbackOverlay.classList.remove('active');
-          this.updateTextWidth();
-        });
-        
-        fallbackFilesPanel.addEventListener('click', (e) => {
-          if (e.target.closest(`.${this.prefix}file`)) {
-            if (window.innerWidth <= 768) {
-                fallbackFilesPanel.classList.remove('active');
-                fallbackOverlay.classList.remove('active');
-                this.updateTextWidth();
-            }
-          }
-        });
-      } else {
-        const allElements = this.container.querySelectorAll('*');
-        const menuToggleElement = Array.from(allElements).find(el => 
-          el.className && el.className.includes('menu-toggle')
-        );
-        const filesPanelElement = Array.from(allElements).find(el => 
-          el.className && el.className.includes('files') && !el.className.includes('files-list') && !el.className.includes('files-overlay')
-        );
-        const overlayElement = Array.from(allElements).find(el => 
-          el.className && el.className.includes('files-overlay')
-        );
-        
-        if (menuToggleElement && filesPanelElement && overlayElement) {
-          menuToggleElement.addEventListener('click', () => {
-            filesPanelElement.classList.toggle('active');
-            overlayElement.classList.toggle('active');
-            this.updateTextWidth();
-          });
-          
-          overlayElement.addEventListener('click', () => {
-            filesPanelElement.classList.remove('active');
-            overlayElement.classList.remove('active');
-            this.updateTextWidth();
-          });
-          
-          filesPanelElement.addEventListener('click', (e) => {
-            if (e.target.closest('[class*="file"]')) {
-              if (window.innerWidth <= 768) {
-                  filesPanelElement.classList.remove('active');
-                  overlayElement.classList.remove('active');
-                  this.updateTextWidth();
-              }
-            }
-          });
         }
       }
-    }
+    });
+  }
+
+  isFileElementClicked(event) {
+    const primaryFileSelector = event.target.closest(`[class~="${this.prefix}file"]`);
+    if (primaryFileSelector) return true;
+    
+    const fallbackFileSelector = event.target.closest(`.${this.prefix}file`);
+    if (fallbackFileSelector) return true;
+    
+    return event.target.closest('[class*="file"]');
   }
 
   formatFileName(filename) {

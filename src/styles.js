@@ -1,4 +1,3 @@
-
 export const styles = `
   .lib-mp-container {
     display: flex;
@@ -16,17 +15,14 @@ export const styles = `
     box-sizing: border-box;
   }
   
-  /* Ensure nothing overflows the container */
   .lib-mp-container {
     overflow: hidden;
   }
   
-  /* Global overflow prevention for all elements */
   .lib-mp-text * {
     max-width: 99%;
   }
   
-  /* Left Panel */
   .lib-mp-files {
     width: 240px;
     padding: 40px 30px;
@@ -89,7 +85,6 @@ export const styles = `
     letter-spacing: 0.05em;
   }
   
-  /* Right Panel */
   .lib-mp-content {
     flex: 1;
     display: flex;
@@ -134,27 +129,27 @@ export const styles = `
     padding: 40px 50px 60px;
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
-    padding-right: 8px; /* Stały padding na desktopie */
+    padding-right: 8px;
   }
   
   .lib-mp-body::-webkit-scrollbar {
-    width: 1px; /* Domyślnie bardzo cienki */
+    width: 1px;
     background: transparent;
     transition: width 0.2s;
   }
   .lib-mp-body:hover::-webkit-scrollbar {
-    width: 8px; /* Na hover staje się szeroki */
+    width: 8px;
   }
   .lib-mp-body::-webkit-scrollbar-thumb {
     background: #333;
     border-radius: 4px;
-    opacity: 0; /* Domyślnie niewidoczny */
-    pointer-events: none; /* Nieklikalny, gdy niewidoczny */
+    opacity: 0;
+    pointer-events: none;
     transition: opacity 0.2s, background 0.2s;
   }
   .lib-mp-body:hover::-webkit-scrollbar-thumb {
-    opacity: 1; /* Pojawia się na hover */
-    pointer-events: auto; /* Staje się klikalny na hover */
+    opacity: 1;
+    pointer-events: auto;
     background: #444;
   }
   
@@ -278,7 +273,6 @@ export const styles = `
     letter-spacing: 0.03em;
   }
   
-  /* Images */
   .lib-mp-text img {
     max-width: 100%;
     height: auto;
@@ -286,14 +280,12 @@ export const styles = `
     margin: 1.5em 0;
   }
   
-  /* Horizontal rule */
   .lib-mp-text hr {
     border: none;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     margin: 2em 0;
   }
   
-  /* Mobile-specific text adjustments */
   @media (max-width: 768px) {
     .lib-mp-text h4,
     .lib-mp-text h5,
@@ -303,7 +295,6 @@ export const styles = `
     }
   }
 
-  /* Empty State */
   .lib-mp-empty {
     flex: 1;
     display: flex;
@@ -314,7 +305,6 @@ export const styles = `
     letter-spacing: 0.1em;
   }
   
-  /* Loading */
   .lib-mp-loading {
     color: #666;
     font-size: 11px;
@@ -322,7 +312,6 @@ export const styles = `
     padding: 20px 0;
   }
   
-  /* Error */
   .lib-mp-error {
     color: #666;
     padding: 20px 0;
@@ -330,7 +319,6 @@ export const styles = `
     letter-spacing: 0.05em;
   }
   
-  /* Progress */
   .lib-mp-progress {
     position: absolute;
     top: 0;
@@ -346,7 +334,6 @@ export const styles = `
     pointer-events: none;
   }
   
-  /* Light theme */
   .lib-mp-container.light {
     background: #fff;
     color: #000;
@@ -366,7 +353,8 @@ export const styles = `
     border-color: rgba(0, 0, 0, 0.05);
   }
   
-  .lib-mp-container.light .lib-mp-file.active::before {
+  .lib-mp-container.light .lib-mp-file.active::before,
+  .lib-mp-files {
     background: #000;
   }
   
@@ -423,13 +411,12 @@ export const styles = `
     background: #000;
   }
   
-  /* Mobile Styles - Przywrócone */
   .lib-mp-menu-toggle {
-    display: none; /* Domyślnie ukryty na desktopie */
-    position: absolute; /* Pozycjonowany względem .lib-mp-container */
+    display: none;
+    position: absolute;
     top: 20px;
     left: 20px;
-    z-index: 101; /* Niżej niż progress bar, wyżej niż content */
+    z-index: 101;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
@@ -452,53 +439,53 @@ export const styles = `
     background: rgba(0, 0, 0, 0.1);
   }
   .lib-mp-files-overlay {
-    display: none; /* Domyślnie ukryty */
-    position: absolute; /* Pozycjonowany względem .lib-mp-container */
+    display: none; 
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 100; /* Niżej niż menu panel */
+    z-index: 100;
   }
   @media (max-width: 768px) {
     .lib-mp-container {
       flex-direction: column;
     }
     .lib-mp-menu-toggle {
-      display: block; /* Pokazany na mobile */
+      display: block;
     }
     .lib-mp-files {
-      position: absolute; /* Wysuwa się */
+      position: absolute;
       top: 0;
       left: -100%;
       width: 280px;
       height: 100%;
-      z-index: 100; /* Wyżej niż overlay */
+      z-index: 100;
       transition: left 0.3s ease;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
     }
     .lib-mp-files.active {
-      left: 0; /* Wysunięty */
+      left: 0;
     }
     .lib-mp-files-overlay.active {
-      display: block; /* Widoczny, gdy menu aktywne */
+      display: block;
     }
     .lib-mp-content {
       width: 100%;
-      padding-top: 60px; /* Miejsce na przycisk menu */
+      padding-top: 60px;
     }
     .lib-mp-header {
       padding: 30px 20px 20px;
     }
     .lib-mp-title {
       font-size: 28px;
-      white-space: normal; /* Zawija tekst */
+      white-space: nowrap;
       word-wrap: break-word;
     }
     .lib-mp-body {
       padding: 30px 20px 40px 20px;
-      padding-right: calc(20px + 8px); /* Padding + miejsce na scrollbar */
+      padding-right: calc(20px + 8px);
     }
     .lib-mp-text {
       font-size: 14px;
@@ -530,7 +517,7 @@ export const styles = `
     }
     .lib-mp-body {
       padding: 20px 8px 30px 8px;
-      padding-right: calc(8px + 8px); /* Padding + miejsce na scrollbar */
+      padding-right: calc(8px + 8px);
     }
     .lib-mp-text {
       padding: 0 5px;
@@ -546,4 +533,4 @@ export const styles = `
       font-size: 11px;
     }
   }
-`; 
+`;
