@@ -25,18 +25,302 @@ class MarkdownsPeek {
     this.disableStyles = options.disableStyles || false;
     this.texts = { ...defaultTexts, ...options.texts };
     this.prefix = options.prefix || generateDefaultPrefix();
-    
     this.container = null;
     this.currentFile = null;
     this.files = [];
+
+    // Wstrzyknij style synchronicznie
+    this.injectStylesSync();
+    // Po DOMContentLoaded rozpocznij polling
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.pollForStyles());
+    } else {
+      this.pollForStyles();
+    }
+  }
+
+  injectStylesSync() {
+    if (this.disableStyles) return;
     
-    this.init();
+    // Globalna mapa wstrzykniętych prefixów
+    if (!window.__markdownsPeekStylePrefixes) {
+      window.__markdownsPeekStylePrefixes = {};
+    }
+    
+    const prefixKey = this.prefix;
+    if (window.__markdownsPeekStylePrefixes[prefixKey]) {
+      return; // Style już wstrzyknięte
+    }
+    
+    const styleId = `markdowns-peek-styles-${prefixKey}`;
+    if (document.getElementById(styleId)) {
+      window.__markdownsPeekStylePrefixes[prefixKey] = true;
+      return;
+    }
+    
+    // Wstrzyknij style synchronicznie
+    const styleElement = document.createElement('style');
+    styleElement.id = styleId;
+    styleElement.textContent = this.processStyles(styles);
+    document.head.appendChild(styleElement);
+    
+    // Oznacz jako wstrzyknięte
+    window.__markdownsPeekStylePrefixes[prefixKey] = true;
+    
+    // WYMUŚ przetworzenie stylów przez przeglądarkę
+    this.forceStyleProcessingSync();
+  }
+
+  forceStyleProcessingSync() {
+    // Wymuś przetworzenie stylów przez przeglądarkę
+    const testElement = document.createElement('div');
+    testElement.className = this.prefix + 'container';
+    testElement.style.position = 'absolute';
+    testElement.style.left = '-9999px';
+    testElement.style.visibility = 'hidden';
+    testElement.style.pointerEvents = 'none';
+    document.body.appendChild(testElement);
+    
+    // Wymuś przeliczenie stylów - to jest kluczowe!
+    const computedStyle = getComputedStyle(testElement);
+    const display = computedStyle.display;
+    
+    document.body.removeChild(testElement);
+    
+    // Jeśli style nie są jeszcze przetworzone, spróbuj ponownie
+    if (display !== 'flex') {
+      // Style nie są jeszcze przetworzone, spróbuj ponownie
+      this.forceStyleProcessingSync();
+    }
+  }
+
+  pollForStyles(attempt = 0) {
+    const MAX_ATTEMPTS = 100;
+    const INTERVAL = 16;
+    this.container = document.getElementById(this.containerId);
+    if (!this.container) {
+      if (attempt < MAX_ATTEMPTS) {
+        setTimeout(() => this.pollForStyles(attempt + 1), INTERVAL);
+      } else {
+        console.error(`Container with id "${this.containerId}" not found`);
+      }
+      return;
+    }
+    
+    // Sprawdź czy style są aktywne
+    if (this.areStylesActive()) {
+      this.initSync();
+      return;
+    }
+    
+    // Jeśli style nie są aktywne i to nie jest pierwsza próba, spróbuj wymusić przetworzenie
+    if (attempt > 0 && attempt % 10 === 0) {
+      this.forceStyleReprocessing();
+    }
+    
+    if (attempt < MAX_ATTEMPTS) {
+      setTimeout(() => this.pollForStyles(attempt + 1), INTERVAL);
+    } else {
+      // Ostateczna próba - zresetuj widget
+      this.resetWidget();
+    }
+  }
+
+  areStylesActive() {
+    const testElement = document.createElement('div');
+    testElement.className = this.prefix + 'container';
+    testElement.style.position = 'absolute';
+    testElement.style.left = '-9999px';
+    testElement.style.visibility = 'hidden';
+    testElement.style.pointerEvents = 'none';
+    document.body.appendChild(testElement);
+    const computedStyle = getComputedStyle(testElement);
+    const display = computedStyle.display;
+    document.body.removeChild(testElement);
+    return display === 'flex';
+  }
+
+  forceStyleReprocessing() {
+    // Usuń stary element style i wstrzyknij ponownie
+    const styleId = `markdowns-peek-styles-${this.prefix}`;
+    const oldStyle = document.getElementById(styleId);
+    if (oldStyle) {
+      oldStyle.remove();
+    }
+    
+    // Wstrzyknij style ponownie
+    const styleElement = document.createElement('style');
+    styleElement.id = styleId;
+    styleElement.textContent = this.processStyles(styles);
+    document.head.appendChild(styleElement);
+    
+    // Wymuś przetworzenie przez przeglądarkę
+    const testElement = document.createElement('div');
+    testElement.className = this.prefix + 'container';
+    testElement.style.position = 'absolute';
+    testElement.style.left = '-9999px';
+    testElement.style.visibility = 'hidden';
+    testElement.style.pointerEvents = 'none';
+    document.body.appendChild(testElement);
+    
+    // Wymuś przeliczenie stylów
+    testElement.offsetHeight;
+    testElement.offsetWidth;
+    
+    document.body.removeChild(testElement);
+  }
+
+  resetWidget() {
+    // Ostateczna próba - zresetuj widget z nowym prefixem
+    console.warn('MarkdownsPeek: resetting widget with new prefix due to style loading failure');
+    
+    // Wygeneruj nowy prefix
+    this.prefix = generateDefaultPrefix();
+    
+    // Usuń stary element style
+    const oldStyleId = `markdowns-peek-styles-${this.prefix}`;
+    const oldStyle = document.getElementById(oldStyleId);
+    if (oldStyle) {
+      oldStyle.remove();
+    }
+    
+    // Wstrzyknij style z nowym prefixem
+    const styleElement = document.createElement('style');
+    styleElement.id = `markdowns-peek-styles-${this.prefix}`;
+    styleElement.textContent = this.processStyles(styles);
+    document.head.appendChild(styleElement);
+    
+    // Wymuś przetworzenie stylów
+    this.forceStyleReprocessing();
+    
+    // Spróbuj ponownie z nowym prefixem
+    setTimeout(() => this.pollForStyles(0), 100);
+  }
+
+  initSync() {
+    // Krok 1: Znajdź kontener
+    this.container = document.getElementById(this.containerId);
+    if (!this.container) {
+      console.error(`Container with id "${this.containerId}" not found`);
+      return;
+    }
+    
+    // Krok 2: Renderuj DOM
+    this.renderSync();
+    
+    // Krok 3: Skonfiguruj menu mobilne
+    this.setupMobileMenu();
+    
+    // Krok 4: Załaduj katalog
+    this.loadDirectory();
+    
+    // Krok 5: Zaktualizuj szerokość tekstu
+    this.updateTextWidth();
+    
+    // Krok 6: Dodaj listener resize
+    window.addEventListener('resize', this.updateTextWidth.bind(this));
+  }
+
+  injectStylesSync() {
+    if (this.disableStyles) return;
+    
+    // Globalna mapa wstrzykniętych prefixów
+    if (!window.__markdownsPeekStylePrefixes) {
+      window.__markdownsPeekStylePrefixes = {};
+    }
+    
+    const prefixKey = this.prefix;
+    if (window.__markdownsPeekStylePrefixes[prefixKey]) {
+      return; // Style już wstrzyknięte
+    }
+    
+    const styleId = `markdowns-peek-styles-${prefixKey}`;
+    if (document.getElementById(styleId)) {
+      window.__markdownsPeekStylePrefixes[prefixKey] = true;
+      return;
+    }
+    
+    // Wstrzyknij style synchronicznie
+    const styleElement = document.createElement('style');
+    styleElement.id = styleId;
+    styleElement.textContent = this.processStyles(styles);
+    document.head.appendChild(styleElement);
+    
+    // Oznacz jako wstrzyknięte
+    window.__markdownsPeekStylePrefixes[prefixKey] = true;
+    
+    // Wymuś przetworzenie stylów przez przeglądarkę
+    this.forceStyleProcessing();
+  }
+
+  forceStyleProcessing() {
+    // Wymuś przetworzenie stylów przez przeglądarkę
+    const testElement = document.createElement('div');
+    testElement.className = this.prefix + 'container';
+    testElement.style.position = 'absolute';
+    testElement.style.left = '-9999px';
+    testElement.style.visibility = 'hidden';
+    testElement.style.pointerEvents = 'none';
+    document.body.appendChild(testElement);
+    
+    // Wymuś przeliczenie stylów
+    const computedStyle = getComputedStyle(testElement);
+    const display = computedStyle.display;
+    
+    document.body.removeChild(testElement);
+    
+    // Sprawdź czy style są przetworzone (powinny być 'flex' dla container)
+    if (display !== 'flex') {
+      // Style nie są jeszcze przetworzone, spróbuj ponownie z limitem
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const retry = () => {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          console.warn('Style processing timeout for prefix:', this.prefix);
+          return;
+        }
+        
+        const retryElement = document.createElement('div');
+        retryElement.className = this.prefix + 'container';
+        retryElement.style.position = 'absolute';
+        retryElement.style.left = '-9999px';
+        retryElement.style.visibility = 'hidden';
+        retryElement.style.pointerEvents = 'none';
+        document.body.appendChild(retryElement);
+        
+        const retryComputedStyle = getComputedStyle(retryElement);
+        const retryDisplay = retryComputedStyle.display;
+        
+        document.body.removeChild(retryElement);
+        
+        if (retryDisplay !== 'flex') {
+          setTimeout(retry, 10);
+        }
+      };
+      
+      setTimeout(retry, 10);
+    }
+  }
+
+  renderSync() {
+    this.container.style.height = this.height;
+    this.container.style.overflow = 'hidden';
+    // Złóż całość HTML widgetu
+    const html = createMainTemplate(this.theme, this.texts, this.prefix);
+    this.container.innerHTML = html;
+    if (!window.viewerInstances) window.viewerInstances = {};
+    window.viewerInstances[this.containerId] = this;
+    // Dopiero teraz podpinaj eventy
+    this.setupMobileMenu();
   }
 
   updateTextWidth() {
     const body = this.container.querySelector(`[class~="${this.prefix}body"]`);
     const text = this.container.querySelector(`[class~="${this.prefix}text"]`);
     if (!body || !text) return;
+    
     const styles = getComputedStyle(body);
     const paddingLeft = parseFloat(styles.paddingLeft) || 0;
     const paddingRight = parseFloat(styles.paddingRight) || 0;
@@ -46,20 +330,7 @@ class MarkdownsPeek {
     }
   }
 
-  init() {
-    this.container = document.getElementById(this.containerId);
-    if (!this.container) {
-      console.error(`Container with id "${this.containerId}" not found`);
-      return;
-    }
-    
-    this.injectStyles();
-    this.render();
-    this.setupMobileMenu();
-    this.loadDirectory();
-    this.updateTextWidth();
-    window.addEventListener('resize', this.updateTextWidth.bind(this));
-  }
+
   
   setupMobileMenu() {
     const menuToggle = this.container.querySelector(`[class~="${this.prefix}menu-toggle"]`);
@@ -80,13 +351,11 @@ class MarkdownsPeek {
       });
       
       filesPanel.addEventListener('click', (e) => {
-        if (e.target.closest(`.${this.prefix}file`)) {
+        if (e.target.closest(`[class~="${this.prefix}file"]`)) {
           if (window.innerWidth <= 768) {
-            setTimeout(() => {
-              filesPanel.classList.remove('active');
-              overlay.classList.remove('active');
-              this.updateTextWidth();
-            }, 100);
+            filesPanel.classList.remove('active');
+            overlay.classList.remove('active');
+            this.updateTextWidth();
           }
         }
       });
@@ -112,31 +381,14 @@ class MarkdownsPeek {
     return kb + 'KB';
   }
 
-  injectStyles() {
-    if (this.disableStyles) return;
-    
-    const styleId = `markdowns-peek-styles-${this.containerId}`;
-    if (document.getElementById(styleId)) return;
-    
-    const styleElement = document.createElement('style');
-    styleElement.id = styleId;
-    styleElement.textContent = this.processStyles(styles);
-    document.head.appendChild(styleElement);
-  }
+
 
   processStyles(css) {
-    return css.replace(/\.lib-mp-/g, `.${this.prefix}`);
+    const processed = css.replace(/\.lib-mp-/g, `.${this.prefix}`);
+    return processed;
   }
 
-  render() {
-    this.container.style.height = this.height;
-    this.container.style.overflow = 'hidden';
-    
-    this.container.innerHTML = createMainTemplate(this.theme, this.texts, this.prefix);
-    
-    if (!window.viewerInstances) window.viewerInstances = {};
-    window.viewerInstances[this.containerId] = this;
-  }
+
 
   async loadDirectory() {
     const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
@@ -158,35 +410,36 @@ class MarkdownsPeek {
       this.files = data.filter(file => 
         file.type === 'file' && file.name.toLowerCase().endsWith('.md')
       );
-      this.renderFileList();
+      // Złóż całość HTML listy plików i wstaw JEDNYM ruchem
+      filesList.innerHTML = this.renderFileListHTML();
+      this.attachFileListEvents();
+      if (this.files.length > 0) {
+        this.loadFile(this.files[0].path);
+      }
     } catch (error) {
       filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
     }
   }
 
-  renderFileList() {
-    const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
+  renderFileListHTML() {
     if (this.files.length === 0) {
-      filesList.innerHTML = createNoFilesTemplate(this.texts, this.prefix);
-      return;
+      return createNoFilesTemplate(this.texts, this.prefix);
     }
-    const filesHtml = this.files.map((file, index) => {
+    return this.files.map((file, index) => {
       const displayName = this.formatFileName(file.name);
       const size = this.formatFileSize(file.size);
       return createFileTemplate(file, index, displayName, size, this.prefix);
     }).join('');
-    filesList.innerHTML = filesHtml;
+  }
+
+  attachFileListEvents() {
+    const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
     const self = this;
     filesList.querySelectorAll(`[class~="${this.prefix}file"]`).forEach(item => {
       item.addEventListener('click', function() {
         self.loadFile(this.dataset.path);
       });
     });
-    if (this.files.length > 0) {
-      setTimeout(() => {
-        this.loadFile(this.files[0].path);
-      }, 100);
-    }
   }
 
   async loadFile(path) {
@@ -223,6 +476,7 @@ class MarkdownsPeek {
       if (firstH1) {
         title = firstH1[1].toUpperCase();
       }
+      // Złóż całość HTML pliku i wstaw JEDNYM ruchem
       content.innerHTML = createFileContentTemplate(
         title,
         readingTime,

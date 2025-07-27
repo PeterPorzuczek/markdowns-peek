@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdowns Peek - Style Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #markdowns-peek {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .debug-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Markdowns Peek - Style Test</h1>
+        
+        <div class="test-info">
+            <strong>Test:</strong> Sprawdzanie czy style są poprawnie aplikowane z konfigurowalnym przedrostkiem.
+        </div>
+        
+        <div id="markdowns-peek"></div>
+        
+        <div class="debug-info" id="debug-info">
+            <strong>Debug Info:</strong><br>
+            Ładowanie...
+        </div>
+    </div>
+
+    <script src="dist/markdowns-peek.js"></script>
+    <script>
+        // Test z custom prefix
+        const viewer = new MarkdownsPeek({
+            containerId: 'markdowns-peek',
+            owner: 'facebook',
+            repo: 'react',
+            theme: 'dark',
+            prefix: 'test-prefix-'
+        });
+        
+        // Debug info
+        const debugInfo = document.getElementById('debug-info');
+        debugInfo.innerHTML = `
+            <strong>Debug Info:</strong><br>
+            Prefix: ${viewer.prefix}<br>
+            Container ID: ${viewer.containerId}<br>
+            Theme: ${viewer.theme}<br>
+            <br>
+            <strong>Sprawdź w konsoli przeglądarki:</strong><br>
+            - Czy style są załadowane<br>
+            - Czy elementy mają poprawne klasy CSS<br>
+            - Czy selektory działają poprawnie
+        `;
+        
+        // Sprawdź style po załadowaniu
+        setTimeout(() => {
+            const container = document.querySelector(`.${viewer.prefix}container`);
+            const files = document.querySelector(`.${viewer.prefix}files`);
+            const content = document.querySelector(`.${viewer.prefix}content`);
+            
+            console.log('Debug - Container:', container);
+            console.log('Debug - Files panel:', files);
+            console.log('Debug - Content:', content);
+            console.log('Debug - All styles loaded:', !!document.querySelector(`#markdowns-peek-styles-${viewer.containerId}`));
+        }, 1000);
+    </script>
+</body>
+</html> 
