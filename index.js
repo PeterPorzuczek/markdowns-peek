@@ -1,5 +1,5 @@
 // index.js - Entry point for the package
-import GitHubMarkdownViewer from './src/markdowns-peek.js';
+import MarkdownsPeek from './src/markdowns-peek.js';
 
-export default GitHubMarkdownViewer;
-export { GitHubMarkdownViewer };
+export default MarkdownsPeek;
+export { MarkdownsPeek };

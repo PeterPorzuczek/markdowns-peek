@@ -36,9 +36,9 @@ yarn add markdowns-peek
 
 <!-- Include the script -->
 <script type="module">
-  import GitHubMarkdownViewer from 'markdowns-peek';
+  import MarkdownsPeek from 'markdowns-peek';
 
-  const viewer = new GitHubMarkdownViewer({
+  const viewer = new MarkdownsPeek({
     containerId: 'markdown-viewer',
     owner: 'facebook',
     repo: 'react',
@@ -52,7 +52,7 @@ yarn add markdowns-peek
 ```html
 <script src="https://unpkg.com/markdowns-peek/dist/markdowns-peek.min.js"></script>
 <script>
-  const viewer = new GitHubMarkdownViewer({
+  const viewer = new MarkdownsPeek({
     containerId: 'markdown-viewer',
     owner: 'vuejs',
     repo: 'vue',
@@ -64,7 +64,7 @@ yarn add markdowns-peek
 ### Advanced Configuration
 
 ```javascript
-const viewer = new GitHubMarkdownViewer({
+const viewer = new MarkdownsPeek({
   containerId: 'markdown-viewer',
   owner: 'microsoft',
   repo: 'typescript',
@@ -72,7 +72,62 @@ const viewer = new GitHubMarkdownViewer({
   path: 'doc',                 // default: '' (root)
   token: 'your-github-token',  // for private repos
   theme: 'dark',               // 'light' or 'dark', default: 'light'
-  disableStyles: false         // set to true to disable default styles
+  disableStyles: false,        // set to true to disable default styles
+  prefix: 'my-custom-',        // custom CSS prefix, default: auto-generated
+  texts: {                     // customize UI texts
+    menu: 'MENU',
+    files: 'FILES',
+    loading: 'LOADING...',
+    selectFile: 'SELECT FILE TO VIEW',
+    error: 'ERROR: ',
+    noFiles: 'NO FILES FOUND',
+    minRead: 'MIN READ'
+  }
+});
+```
+
+### Customizing CSS Prefix
+
+Each viewer instance uses a unique CSS prefix to avoid conflicts when multiple instances are used on the same page. You can set a custom prefix or let it auto-generate:
+
+```javascript
+// Auto-generated prefix (default)
+const viewer1 = new MarkdownsPeek({
+  containerId: 'viewer1',
+  owner: 'facebook',
+  repo: 'react'
+});
+console.log(viewer1.prefix); // e.g., "a1b2c3d4-lib-mp-"
+
+// Custom prefix
+const viewer2 = new MarkdownsPeek({
+  containerId: 'viewer2',
+  owner: 'vuejs',
+  repo: 'vue',
+  prefix: 'my-custom-'
+});
+console.log(viewer2.prefix); // "my-custom-"
+```
+
+### Customizing Texts
+
+You can customize all UI texts by passing a `texts` object in the configuration:
+
+```javascript
+// Polish example
+const viewer = new MarkdownsPeek({
+  containerId: 'markdown-viewer',
+  owner: 'facebook',
+  repo: 'react',
+  texts: {
+    menu: 'MENU',
+    files: 'PLIKI',
+    loading: 'ŁADOWANIE...',
+    selectFile: 'WYBIERZ PLIK DO WYŚWIETLENIA',
+    error: 'BŁĄD: ',
+    noFiles: 'NIE ZNALEZIONO PLIKÓW',
+    minRead: 'MIN CZYTANIA'
+  }
 });
 ```
 
@@ -119,24 +174,24 @@ The viewer comes with default styles, but you can customize it using CSS:
 
 ```css
 /* Container height */
-.gmv-container {
+.lib-mp-container {
   height: 800px !important;
 }
 
 /* Sidebar width (desktop only) */
 @media (min-width: 769px) {
-  .gmv-files {
+  .lib-mp-files {
     width: 350px !important;
   }
 }
 
 /* Custom theme colors */
-.gmv-container.dark {
+.lib-mp-container.dark {
   background: #1a1a1a !important;
 }
 
 /* Mobile menu button styling */
-.gmv-menu-toggle {
+.lib-mp-menu-toggle {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 ```
@@ -156,7 +211,7 @@ The mobile menu can be toggled using the hamburger button that appears in the to
 If you want to use your own CSS styles, you can disable the default styles:
 
 ```javascript
-const viewer = new GitHubMarkdownViewer({
+const viewer = new MarkdownsPeek({
   containerId: 'markdown-viewer',
   owner: 'facebook',
   repo: 'react',
@@ -166,13 +221,13 @@ const viewer = new GitHubMarkdownViewer({
 
 When `disableStyles` is set to `true`, you'll need to provide your own CSS. The viewer uses the following class structure:
 
-- `.gmv-container` - Main container
-- `.gmv-files` - File list sidebar
-- `.gmv-content` - Content area
-- `.gmv-menu-toggle` - Mobile menu button
-- `.gmv-header` - Document header
-- `.gmv-body` - Document body
-- `.gmv-text` - Markdown content
+- `.lib-mp-container` - Main container
+- `.lib-mp-files` - File list sidebar
+- `.lib-mp-content` - Content area
+- `.lib-mp-menu-toggle` - Mobile menu button
+- `.lib-mp-header` - Document header
+- `.lib-mp-body` - Document body
+- `.lib-mp-text` - Markdown content
 
 ## Private Repositories
 
@@ -183,7 +238,7 @@ To access private repositories, you need to provide a GitHub personal access tok
 3. Use the token in your configuration:
 
 ```javascript
-const viewer = new GitHubMarkdownViewer({
+const viewer = new MarkdownsPeek({
   containerId: 'markdown-viewer',
   owner: 'your-username',
   repo: 'private-repo',
@@ -197,13 +252,13 @@ const viewer = new GitHubMarkdownViewer({
 
 ```jsx
 import React, { useEffect, useRef } from 'react';
-import GitHubMarkdownViewer from 'markdowns-peek';
+import MarkdownsPeek from 'markdowns-peek';
 
 function MarkdownViewer({ owner, repo }) {
   const viewerRef = useRef(null);
 
   useEffect(() => {
-    const viewer = new GitHubMarkdownViewer({
+    const viewer = new MarkdownsPeek({
       containerId: 'md-viewer',
       owner,
       repo
@@ -228,12 +283,12 @@ function MarkdownViewer({ owner, repo }) {
 </template>
 
 <script>
-import GitHubMarkdownViewer from 'markdowns-peek';
+import MarkdownsPeek from 'markdowns-peek';
 
 export default {
   props: ['owner', 'repo'],
   mounted() {
-    this.viewer = new GitHubMarkdownViewer({
+    this.viewer = new MarkdownsPeek({
       containerId: 'md-viewer',
       owner: this.owner,
       repo: this.repo

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdowns Peek - Custom Texts Example</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .example {
+            margin-bottom: 40px;
+        }
+        .example h2 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        #markdowns-peek {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #markdowns-peek-polish {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Markdowns Peek - Custom Texts Examples</h1>
+        
+        <div class="example">
+            <h2>Default English Texts</h2>
+            <div id="markdowns-peek"></div>
+        </div>
+        
+        <div class="example">
+            <h2>Custom Polish Texts</h2>
+            <div id="markdowns-peek-polish"></div>
+        </div>
+    </div>
+
+    <script src="dist/markdowns-peek.js"></script>
+
+    <script>
+        
+        // Default English texts
+        new MarkdownsPeek({
+            containerId: 'markdowns-peek',
+            owner: 'facebook',
+            repo: 'react',
+            theme: 'light'
+        });
+        
+        // Custom Polish texts
+        new MarkdownsPeek({
+            containerId: 'markdowns-peek-polish',
+            owner: 'facebook',
+            repo: 'react',
+            theme: 'dark',
+            texts: {
+                menu: 'MENU',
+                files: 'PLIKI',
+                loading: 'ŁADOWANIE...',
+                selectFile: 'WYBIERZ PLIK DO WYŚWIETLENIA',
+                error: 'BŁĄD: ',
+                noFiles: 'NIE ZNALEZIONO PLIKÓW',
+                minRead: 'MIN CZYTANIA'
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -10,7 +10,7 @@ export default [
   {
     input: 'src/markdowns-peek.js',
     output: {
-      name: 'GitHubMarkdownViewer',
+      name: 'MarkdownsPeek',
       file: 'dist/markdowns-peek.js',
       format: 'umd',
       sourcemap: true
@@ -28,7 +28,7 @@ export default [
   {
     input: 'src/markdowns-peek.js',
     output: {
-      name: 'GitHubMarkdownViewer',
+      name: 'MarkdownsPeek',
       file: 'dist/markdowns-peek.min.js',
       format: 'umd',
       sourcemap: true
