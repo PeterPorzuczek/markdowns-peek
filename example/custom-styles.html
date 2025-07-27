@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdowns Peek - Custom Styles Examples</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .example {
+            margin-bottom: 40px;
+        }
+        .example h2 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        #markdowns-peek-en {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #markdowns-peek-pl {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #markdowns-peek-vanilla {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* English Style - Modern Dark Theme */
+        .en-container {
+            display: flex;
+            position: relative;
+            height: 100%;
+            background: #1a1a1a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .en-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #3b82f6;
+            transform-origin: left;
+            z-index: 1000;
+        }
+        .en-menu-toggle {
+            display: none;
+        }
+        .en-files-overlay {
+            display: none;
+        }
+        .en-files {
+            width: 320px;
+            background: #111827;
+            border-right: 1px solid #374151;
+            flex-shrink: 0;
+        }
+        .en-label {
+            padding: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #f9fafb;
+            border-bottom: 1px solid #374151;
+            background: #1f2937;
+        }
+        .en-files-list {
+            padding: 0;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .en-file {
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #374151;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .en-file:hover {
+            background: #374151;
+        }
+        .en-file.active {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+        .en-file-name {
+            font-weight: 500;
+            font-size: 14px;
+            flex: 1;
+        }
+        .en-file-meta {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+        .en-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: #1a1a1a;
+        }
+        .en-empty {
+            text-align: center;
+            font-size: 16px;
+            color: #9ca3af;
+            margin-top: 200px;
+        }
+        .en-loading {
+            text-align: center;
+            font-size: 16px;
+            color: #9ca3af;
+            padding: 20px;
+        }
+        .en-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #374151;
+        }
+        .en-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #f9fafb;
+        }
+        .en-info {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #9ca3af;
+        }
+        .en-body {
+            line-height: 1.7;
+            font-size: 16px;
+        }
+        .en-text {
+            max-width: 800px;
+            color: #e5e7eb;
+        }
+        .en-text h1, .en-text h2, .en-text h3 {
+            color: #f9fafb;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .en-text p {
+            margin-bottom: 20px;
+        }
+        .en-text code {
+            background: #374151;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #fbbf24;
+            font-size: 14px;
+        }
+        .en-text pre {
+            background: #111827;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            margin: 20px 0;
+        }
+        .en-error {
+            color: #ef4444;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Polish Style - Classic Light Theme */
+        .pl-container {
+            display: flex;
+            position: relative;
+            height: 100%;
+            background: #ffffff;
+            color: #333333;
+            font-family: 'Georgia', serif;
+            border: 1px solid #e1e5e9;
+        }
+        .pl-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #dc2626;
+            transform-origin: left;
+            z-index: 1000;
+        }
+        .pl-menu-toggle {
+            display: none;
+        }
+        .pl-files-overlay {
+            display: none;
+        }
+        .pl-files {
+            width: 300px;
+            background: #f8fafc;
+            border-right: 1px solid #e1e5e9;
+            flex-shrink: 0;
+        }
+        .pl-label {
+            padding: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 1px solid #e1e5e9;
+            background: #ffffff;
+        }
+        .pl-files-list {
+            padding: 0;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .pl-file {
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pl-file:hover {
+            background: #f1f5f9;
+        }
+        .pl-file.active {
+            background: #dc2626;
+            color: #ffffff;
+        }
+        .pl-file-name {
+            font-weight: 500;
+            font-size: 14px;
+            flex: 1;
+        }
+        .pl-file-meta {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+        .pl-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+        .pl-empty {
+            text-align: center;
+            font-size: 16px;
+            color: #6b7280;
+            margin-top: 200px;
+        }
+        .pl-loading {
+            text-align: center;
+            font-size: 16px;
+            color: #6b7280;
+            padding: 20px;
+        }
+        .pl-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        .pl-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+        .pl-info {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .pl-body {
+            line-height: 1.7;
+            font-size: 16px;
+        }
+        .pl-text {
+            max-width: 800px;
+            color: #374151;
+        }
+        .pl-text h1, .pl-text h2, .pl-text h3 {
+            color: #1f2937;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e1e5e9;
+            padding-bottom: 8px;
+        }
+        .pl-text p {
+            margin-bottom: 20px;
+        }
+        .pl-text code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #dc2626;
+            font-size: 14px;
+        }
+        .pl-text pre {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e1e5e9;
+            margin: 20px 0;
+        }
+        .pl-error {
+            color: #dc2626;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Vanilla Style - Minimalist Clean Theme */
+        .vanilla-container {
+            display: flex;
+            position: relative;
+            height: 100%;
+            background: #ffffff;
+            color: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .vanilla-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: #10b981;
+            transform-origin: left;
+            z-index: 1000;
+        }
+        .vanilla-menu-toggle {
+            display: none;
+        }
+        .vanilla-files-overlay {
+            display: none;
+        }
+        .vanilla-files {
+            width: 280px;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+        .vanilla-label {
+            padding: 16px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        .vanilla-files-list {
+            padding: 0;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .vanilla-file {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .vanilla-file:hover {
+            background: #f9fafb;
+        }
+        .vanilla-file.active {
+            background: #ecfdf5;
+            border-left: 3px solid #10b981;
+        }
+        .vanilla-file-name {
+            font-weight: 500;
+            font-size: 13px;
+            flex: 1;
+            color: #374151;
+        }
+        .vanilla-file-meta {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-left: 10px;
+        }
+        .vanilla-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+        .vanilla-empty {
+            text-align: center;
+            font-size: 15px;
+            color: #9ca3af;
+            margin-top: 200px;
+        }
+        .vanilla-loading {
+            text-align: center;
+            font-size: 15px;
+            color: #9ca3af;
+            padding: 20px;
+        }
+        .vanilla-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .vanilla-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        .vanilla-info {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .vanilla-body {
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .vanilla-text {
+            max-width: 700px;
+            color: #374151;
+        }
+        .vanilla-text h1, .vanilla-text h2, .vanilla-text h3 {
+            color: #111827;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .vanilla-text p {
+            margin-bottom: 20px;
+        }
+        .vanilla-text code {
+            background: #f3f4f6;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #dc2626;
+            font-size: 13px;
+        }
+        .vanilla-text pre {
+            background: #f9fafb;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            margin: 20px 0;
+        }
+        .vanilla-error {
+            color: #dc2626;
+            padding: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .en-files, .pl-files, .vanilla-files {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 200;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Markdowns Peek - Custom Styles Examples</h1>
+        
+        <div class="example">
+            <h2>English Style - Modern Dark Theme</h2>
+            <div id="markdowns-peek-en"></div>
+        </div>
+        
+        <div class="example">
+            <h2>Polish Style - Classic Light Theme</h2>
+            <div id="markdowns-peek-pl"></div>
+        </div>
+        
+        <div class="example">
+            <h2>Vanilla Style - Minimalist Clean Theme</h2>
+            <div id="markdowns-peek-vanilla"></div>
+        </div>
+    </div>
+
+    <script src="dist/markdowns-peek.js"></script>
+
+    <script>
+        new MarkdownsPeek({
+            containerId: 'markdowns-peek-en',
+            owner: 'facebook',
+            repo: 'react',
+            theme: 'dark',
+            prefix: 'en-',
+            disableStyles: true
+        });
+        
+        new MarkdownsPeek({
+            containerId: 'markdowns-peek-pl',
+            owner: 'vuejs',
+            repo: 'core',
+            theme: 'light',
+            prefix: 'pl-',
+            disableStyles: true
+        });
+        
+        new MarkdownsPeek({
+            containerId: 'markdowns-peek-vanilla',
+            owner: 'angular',
+            repo: 'angular',
+            theme: 'light',
+            prefix: 'vanilla-',
+            disableStyles: true
+        });
+    </script>
+</body>
+</html> 
