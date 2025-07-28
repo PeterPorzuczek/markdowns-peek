@@ -7,6 +7,8 @@ export const styles = `
     font-family: -apple-system, system-ui, sans-serif;
     height: 100%;
     overflow: hidden;
+    min-width: 0;
+    max-width: 100%;
   }
   
   .lib-mp-container * {
@@ -417,8 +419,8 @@ export const styles = `
     top: 20px;
     left: 20px;
     z-index: 101;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 1);
+    border: 1px solid rgba(0, 0, 0, 1);
     border-radius: 4px;
     padding: 8px 12px;
     cursor: pointer;
@@ -426,17 +428,24 @@ export const styles = `
     letter-spacing: 0.1em;
     color: #fff;
     transition: all 0.2s ease;
+    width: auto;
+    min-width: 60px;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 5px;
   }
   .lib-mp-menu-toggle:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 1);
   }
   .lib-mp-container.light .lib-mp-menu-toggle {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 1);
     color: #000;
   }
   .lib-mp-container.light .lib-mp-menu-toggle:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 1);
   }
   .lib-mp-files-overlay {
     display: none; 
@@ -451,9 +460,18 @@ export const styles = `
   @media (max-width: 768px) {
     .lib-mp-container {
       flex-direction: column;
+      position: relative;
+      overflow: hidden;
     }
     .lib-mp-menu-toggle {
       display: block;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: auto;
+      min-width: 60px;
+      max-width: 120px;
+      z-index: 1001;
     }
     .lib-mp-files {
       position: absolute;
@@ -506,6 +524,15 @@ export const styles = `
     }
   }
   @media (max-width: 480px) {
+    .lib-mp-menu-toggle {
+      top: 10px;
+      left: 10px;
+      width: auto;
+      min-width: 50px;
+      max-width: 100px;
+      padding: 6px 10px;
+      font-size: 10px;
+    }
     .lib-mp-files {
       width: 260px;
     }
