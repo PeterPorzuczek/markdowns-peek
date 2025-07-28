@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`MarkdownsPeek Snapshots Custom configuration HTML structure snapshot 1`] = `
+{
+  "containerId": "test-container",
+  "customConfig": true,
+  "prefix": "custom-prefix",
+  "texts": {
+    "error": "Custom Error: ",
+    "files": "FILES",
+    "loading": "Custom Loading...",
+    "menu": "MENU",
+    "minRead": "MIN READ",
+    "noFiles": "Custom No Files",
+    "selectFile": "SELECT FILE TO VIEW",
+  },
+}
+`;
+
+exports[`MarkdownsPeek Snapshots Default HTML structure snapshot 1`] = `
+{
+  "containerId": "test-container",
+  "prefix": "dizvgtdi-lib-mp-",
+  "styles": undefined,
+  "texts": {
+    "error": "ERROR: ",
+    "files": "FILES",
+    "loading": "LOADING...",
+    "menu": "MENU",
+    "minRead": "MIN READ",
+    "noFiles": "NO FILES FOUND",
+    "selectFile": "SELECT FILE TO VIEW",
+  },
+}
+`;
+
+exports[`MarkdownsPeek Snapshots Mobile menu HTML structure snapshot 1`] = `
+{
+  "hasMobileMenu": true,
+  "mobileClasses": [
+    "r544tdr9-lib-mp-mobile-menu",
+    "r544tdr9-lib-mp-mobile-toggle",
+  ],
+  "prefix": "r544tdr9-lib-mp-",
+}
+`;

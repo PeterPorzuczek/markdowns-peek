@@ -22,9 +22,9 @@
 <body>
 
   <nav>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
+    <a href="/markdowns-peek/">Home</a>
+    <a href="/markdowns-peek/about">About</a>
+    <a href="/markdowns-peek/contact">Contact</a>
   </nav>
 
   <div id="app">
@@ -35,21 +35,21 @@
     const app = document.getElementById('app');
 
     const routes = {
-      '/': () => {
+      '/markdowns-peek/': () => {
         document.title = 'Home';
         app.innerHTML = `
           <h1>Home Page</h1>
           <p>Welcome to the homepage. Choose a page above.</p>
         `;
       },
-      '/about': () => {
+      '/markdowns-peek/about': () => {
         document.title = 'About';
         app.innerHTML = `
           <h1>About Page</h1>
           <p>This is the about page with some info.</p>
         `;
       },
-      '/contact': () => {
+      '/markdowns-peek/contact': () => {
         document.title = 'Contact';
         app.innerHTML = `
           <h1>Contact Page</h1>
