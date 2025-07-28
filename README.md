@@ -4,6 +4,14 @@
 
 A beautiful GitHub Markdown file viewer for web applications.
 
+## Preview
+
+<div><img src="https://i.imgur.com/mSfShUz.png" width="50%"></div>
+
+[![Live](https://peterporzuczek.github.io/markdowns-peek/)
+
+---
+
 ## Installation
 
 ```bash
