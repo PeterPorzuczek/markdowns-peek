@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Vanilla SPA</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      color: blue;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+  </nav>
+
+  <div id="app">
+    <h1>Loading...</h1>
+  </div>
+
+  <script>
+    const app = document.getElementById('app');
+
+    const routes = {
+      '/': () => {
+        document.title = 'Home';
+        app.innerHTML = `
+          <h1>Home Page</h1>
+          <p>Welcome to the homepage. Choose a page above.</p>
+        `;
+      },
+      '/about': () => {
+        document.title = 'About';
+        app.innerHTML = `
+          <h1>About Page</h1>
+          <p>This is the about page with some info.</p>
+        `;
+      },
+      '/contact': () => {
+        document.title = 'Contact';
+        app.innerHTML = `
+          <h1>Contact Page</h1>
+          <p>Contact us via this form or by email.</p>
+        `;
+      }
+    };
+
+    function router() {
+      const path = window.location.pathname;
+      const view = routes[path] || (() => {
+        document.title = '404';
+        app.innerHTML = '<h1>404 - Page Not Found</h1>';
+      });
+      view();
+    }
+
+    // Handle link clicks
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A' && e.target.href.startsWith(window.location.origin)) {
+        e.preventDefault();
+        const path = new URL(e.target.href).pathname;
+        history.pushState({}, '', path);
+        router();
+      }
+    });
+
+    window.addEventListener('popstate', router);
+    window.addEventListener('DOMContentLoaded', router);
+  </script>
+
+</body>
+</html>

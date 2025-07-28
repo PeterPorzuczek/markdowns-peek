@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdowns Peek - Custom Prefix Example</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .example {
+            margin-bottom: 40px;
+        }
+        .example h2 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        #markdowns-peek {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #markdowns-peek-custom {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .info code {
+            background: #fff;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Markdowns Peek - Custom Prefix Examples</h1>
+        
+        <div class="info">
+            <strong>Info:</strong> Each viewer instance now uses a unique CSS prefix to avoid conflicts when multiple instances are used on the same page.
+        </div>
+        
+        <div class="example">
+            <h2>Default Random Prefix (auto-generated)</h2>
+            <p>This instance uses an auto-generated prefix like <code>a1b2c3d4-lib-mp-</code></p>
+            <div id="markdowns-peek"></div>
+        </div>
+        
+        <div class="example">
+            <h2>Custom Prefix</h2>
+            <p>This instance uses a custom prefix: <code>my-custom-</code></p>
+            <div id="markdowns-peek-custom"></div>
+        </div>
+    </div>
+
+    <script src="dist/markdowns-peek.js"></script>
+
+    <script>        
+        // Default random prefix
+        const viewer1 = new MarkdownsPeek({
+            containerId: 'markdowns-peek',
+            owner: 'facebook',
+            repo: 'react',
+            theme: 'light'
+        });
+        
+        console.log('Viewer 1 prefix:', viewer1.prefix);
+        
+        // Custom prefix
+        const viewer2 = new MarkdownsPeek({
+            containerId: 'markdowns-peek-custom',
+            owner: 'vuejs', 
+            repo: 'core',
+            path: 'changelogs',
+            theme: 'dark',
+            prefix: 'my-custom-'
+        });
+        
+        console.log('Viewer 2 prefix:', viewer2.prefix);
+    </script>
+</body>
+</html> 
