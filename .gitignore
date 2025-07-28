@@ -5,8 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build output
-dist/
-example/dist/
+dist/*
 build/
 
 # IDE files
