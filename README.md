@@ -79,7 +79,7 @@ This project uses GitHub Actions for continuous integration:
 
 ### Workflows
 
-- **Tests** (`test.yml`) - Runs tests on Node.js 18.x
+- **Tests** (`test.yml`) - Runs tests on Node.js 20.x
 - **Lint** (`lint.yml`) - Checks code formatting and build process
 
 ### Triggers
