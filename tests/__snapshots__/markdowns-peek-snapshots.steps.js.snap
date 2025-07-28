@@ -20,7 +20,7 @@ exports[`MarkdownsPeek Snapshots Custom configuration HTML structure snapshot 1`
 exports[`MarkdownsPeek Snapshots Default HTML structure snapshot 1`] = `
 {
   "containerId": "test-container",
-  "prefix": "dizvgtdi-lib-mp-",
+  "prefix": "default-prefix",
   "styles": undefined,
   "texts": {
     "error": "ERROR: ",
@@ -38,9 +38,9 @@ exports[`MarkdownsPeek Snapshots Mobile menu HTML structure snapshot 1`] = `
 {
   "hasMobileMenu": true,
   "mobileClasses": [
-    "r544tdr9-lib-mp-mobile-menu",
-    "r544tdr9-lib-mp-mobile-toggle",
+    "test-prefixmobile-menu",
+    "test-prefixmobile-toggle",
   ],
-  "prefix": "r544tdr9-lib-mp-",
+  "prefix": "test-prefix",
 }
 `;

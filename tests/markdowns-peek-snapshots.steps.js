@@ -24,7 +24,11 @@ defineFeature(feature, test => {
 
   test('Default HTML structure snapshot', ({ given, when, then }) => {
     given('I have a MarkdownsPeek instance with default settings', () => {
-      markdownsPeek = new MarkdownsPeek({ containerId: 'test-container' });
+      const customConfig = {
+        containerId: 'test-container',
+        prefix: 'default-prefix'
+      };
+      markdownsPeek = new MarkdownsPeek(customConfig);
     });
 
     when('I initialize the component', () => {
@@ -85,7 +89,11 @@ defineFeature(feature, test => {
 
   test('Mobile menu HTML structure snapshot', ({ given, when, then }) => {
     given('I have a MarkdownsPeek instance', () => {
-      markdownsPeek = new MarkdownsPeek({ containerId: 'test-container' });
+      const customConfig = {
+        containerId: 'test-container',
+        prefix: 'test-prefix'
+      };
+      markdownsPeek = new MarkdownsPeek(customConfig);
     });
 
     when('the mobile menu is rendered', () => {
