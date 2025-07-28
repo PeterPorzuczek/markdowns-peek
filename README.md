@@ -1,7 +1,6 @@
 # MarkdownsPeek
 
 [![Tests](https://github.com/your-username/markdowns-peek/actions/workflows/test.yml/badge.svg)](https://github.com/your-username/markdowns-peek/actions/workflows/test.yml)
-[![Deploy](https://github.com/your-username/markdowns-peek/actions/workflows/deploy.yml/badge.svg)](https://github.com/your-username/markdowns-peek/actions/workflows/deploy.yml)
 
 A beautiful GitHub Markdown file viewer for web applications.
 
@@ -76,22 +75,20 @@ npm run serve
 
 ## GitHub Actions
 
-This project uses GitHub Actions for continuous integration and deployment:
+This project uses GitHub Actions for continuous integration:
 
 ### Workflows
 
-- **Tests** (`test.yml`) - Runs tests on multiple Node.js versions (16.x, 18.x, 20.x)
-- **Deploy** (`deploy.yml`) - Automatically deploys to GitHub Pages on push to main
+- **Tests** (`test.yml`) - Runs tests on Node.js 18.x
 - **Lint** (`lint.yml`) - Checks code formatting and build process
 
 ### Triggers
 
 - Tests and Lint run on every push to `main` and pull requests
-- Deploy runs only on push to `main` branch
 
 ### Status Badges
 
-The README includes badges showing the status of Tests and Deploy workflows.
+The README includes a badge showing the status of Tests workflow.
 
 ## License
 
