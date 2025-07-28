@@ -11,16 +11,16 @@
     "src"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "node node_modules/rollup/dist/bin/rollup -c",
+    "dev": "node node_modules/rollup/dist/bin/rollup -c -w",
     "pretest": "npm run build",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
-    "prepare": "npm run build && rimraf example/markdowns-peek.js && copyfiles -f dist/markdowns-peek.js example",
+
     "deploy": "gh-pages -d example",
-    "predeploy": "npm run prepare",
-    "preserve": "npm run prepare",
+    "predeploy": "npm run build && rimraf example/markdowns-peek.js && copyfiles -f dist/markdowns-peek.js example",
+    "preserve": "npm run build && rimraf example/markdowns-peek.js && copyfiles -f dist/markdowns-peek.js example",
     "serve": "npx serve example"
   },
   "keywords": [
