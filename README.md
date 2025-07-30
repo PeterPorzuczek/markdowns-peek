@@ -1,6 +1,7 @@
 # MarkdownsPeek
 
 [![Tests](https://github.com/peterporzuczek/markdowns-peek/actions/workflows/test.yml/badge.svg)](https://github.com/peterporzuczek/markdowns-peek/actions/workflows/test.yml)
+[![Star on GitHub](https://img.shields.io/github/stars/PeterPorzuczek/markdowns-peek?style=social)](https://github.com/PeterPorzuczek/markdowns-peek)
 
 A beautiful GitHub Markdown file viewer for web applications.
 
@@ -8,7 +9,7 @@ A beautiful GitHub Markdown file viewer for web applications.
 
 ### [Live](https://peterporzuczek.github.io/markdowns-peek/)
 
-<div><img src="https://i.imgur.com/mSfShUz.png" width="80%"></div>
+<div><img src="https://i.imgur.com/fogEBZP.png" width="80%"></div>
 
 ---
 

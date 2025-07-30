@@ -307,32 +307,32 @@ class MarkdownsPeek {
   }
 
   attachMenuToggleListener(menuToggle, filesPanel, overlay) {
-    menuToggle.addEventListener('click', () => {
-      filesPanel.classList.toggle('active');
-      overlay.classList.toggle('active');
-      this.updateTextWidth();
-    });
+      menuToggle.addEventListener('click', () => {
+        filesPanel.classList.toggle('active');
+        overlay.classList.toggle('active');
+        this.updateTextWidth();
+      });
   }
-
+      
   attachOverlayClickListener(overlay, filesPanel) {
-    overlay.addEventListener('click', () => {
-      filesPanel.classList.remove('active');
-      overlay.classList.remove('active');
-      this.updateTextWidth();
-    });
+      overlay.addEventListener('click', () => {
+        filesPanel.classList.remove('active');
+        overlay.classList.remove('active');
+        this.updateTextWidth();
+      });
   }
-
+      
   attachFilesPanelClickListener(filesPanel, overlay) {
-    filesPanel.addEventListener('click', (e) => {
+      filesPanel.addEventListener('click', (e) => {
       if (this.isFileElementClicked(e)) {
-        if (window.innerWidth <= 768) {
-          filesPanel.classList.remove('active');
-          overlay.classList.remove('active');
-          this.updateTextWidth();
+          if (window.innerWidth <= 768) {
+              filesPanel.classList.remove('active');
+              overlay.classList.remove('active');
+              this.updateTextWidth();
         }
-      }
-    });
-  }
+        }
+      });
+    }
 
   isFileElementClicked(event) {
     const primaryFileSelector = event.target.closest(`[class~="${this.prefix}file"]`);
@@ -392,17 +392,27 @@ class MarkdownsPeek {
       this.files = data.filter(file => 
         file.type === 'file' && file.name.toLowerCase().endsWith('.md')
       );
-      
       if (this.sortAlphabetically) {
         this.sortFilesAlphabetically();
       }
-      
       filesList.innerHTML = this.renderFileListHTML();
       this.attachFileListEvents();
-      if (this.files.length > 0) {
+      if (this.path && this.files.length > 0) {
+        const found = this.files.find(f => f.path === this.path);
+        if (found) {
+          this.loadFile(found.path);
+        } else {
+          this.loadFile(this.files[0].path);
+        }
+      } else if (this.files.length > 0) {
         this.loadFile(this.files[0].path);
       }
     } catch (error) {
+      if (this.path && this.path !== '') {
+        this.path = '';
+        this.loadDirectory();
+        return;
+      }
       filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
     }
   }
