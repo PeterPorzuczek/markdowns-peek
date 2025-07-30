@@ -397,10 +397,11 @@ class MarkdownsPeek {
       }
       filesList.innerHTML = this.renderFileListHTML();
       this.attachFileListEvents();
-      if (this.path && this.files.length > 0) {
-        const found = this.files.find(f => f.path === this.path);
-        if (found) {
-          this.loadFile(found.path);
+      if (this.path && this.path !== '' && this.files.length > 0) {
+        const pathPrefix = this.path + '/';
+        const filesInPath = this.files.filter(f => f.path.startsWith(pathPrefix));
+        if (filesInPath.length > 0) {
+          this.loadFile(filesInPath[0].path);
         } else {
           this.loadFile(this.files[0].path);
         }
