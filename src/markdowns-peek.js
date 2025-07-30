@@ -425,6 +425,12 @@ class MarkdownsPeek {
         this.files.forEach(file => {
           file.path = this.path + '/' + file.name;
         });
+        const filesFromPath = this.files.filter(file => file.path.startsWith(this.path + '/'));
+        if (filesFromPath.length === 0) {
+          this.path = '';
+          this.loadDirectory();
+          return;
+        }
       }
       if (this.sortAlphabetically) {
         this.sortFilesAlphabetically();
