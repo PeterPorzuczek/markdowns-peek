@@ -27,6 +27,9 @@ import { MarkdownsPeek } from 'markdowns-peek';
 const container = document.getElementById('markdown-viewer');
 const viewer = new MarkdownsPeek(container, {
   prefix: 'custom-prefix-',
+  owner: "peterporzuczek",
+  repo: "articles",
+  path: "articles-md",
   disableStyles: false,
   sortAlphabetically: false,
   texts: {

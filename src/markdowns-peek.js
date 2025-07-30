@@ -203,9 +203,38 @@ class MarkdownsPeek {
   initSync() {
     this.findContainer();
     this.renderSync();
-    this.loadDirectory();
+    this.verifyPathAndLoad();
     this.updateTextWidth();
     this.addResizeListener();
+  }
+
+  async verifyPathAndLoad() {
+    if (!this.path || this.path === '') {
+      this.loadDirectory();
+      return;
+    }
+    
+    try {
+      const headers = {
+        'Accept': 'application/vnd.github.v3+json'
+      };
+      if (this.token) {
+        headers['Authorization'] = `token ${this.token}`;
+      }
+      const response = await fetch(
+        `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.path}?ref=${this.branch}`,
+        { headers }
+      );
+      if (response.ok) {
+        this.loadDirectory();
+      } else {
+        const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
+        filesList.innerHTML = createErrorTemplate(`Path "${this.path}" not found`, this.texts, this.prefix);
+      }
+    } catch (error) {
+      const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
+      filesList.innerHTML = createErrorTemplate(`Error loading path "${this.path}": ${error.message}`, this.texts, this.prefix);
+    }
   }
 
   findContainer() {
@@ -392,28 +421,20 @@ class MarkdownsPeek {
       this.files = data.filter(file => 
         file.type === 'file' && file.name.toLowerCase().endsWith('.md')
       );
+      if (this.path && this.path !== '') {
+        this.files.forEach(file => {
+          file.path = this.path + '/' + file.name;
+        });
+      }
       if (this.sortAlphabetically) {
         this.sortFilesAlphabetically();
       }
       filesList.innerHTML = this.renderFileListHTML();
       this.attachFileListEvents();
-      if (this.path && this.path !== '' && this.files.length > 0) {
-        const pathPrefix = this.path + '/';
-        const filesInPath = this.files.filter(f => f.path.startsWith(pathPrefix));
-        if (filesInPath.length > 0) {
-          this.loadFile(filesInPath[0].path);
-        } else {
-          this.loadFile(this.files[0].path);
-        }
-      } else if (this.files.length > 0) {
+      if (this.files.length > 0) {
         this.loadFile(this.files[0].path);
       }
     } catch (error) {
-      if (this.path && this.path !== '') {
-        this.path = '';
-        this.loadDirectory();
-        return;
-      }
       filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
     }
   }
