@@ -4848,8 +4848,9 @@
             });
             const filesFromPath = this.files.filter(file => file.path.startsWith(this.path + '/'));
             if (filesFromPath.length === 0) {
-              this.path = '';
-              this.loadDirectory();
+              setTimeout(() => {
+                this.loadDirectory();
+              }, 1000);
               return;
             }
           }
