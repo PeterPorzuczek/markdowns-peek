@@ -4844,31 +4844,31 @@
 
       async loadDirectory() {
         const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
-        
+
         try {
           const data = await this.fetchGitHubContents(this.path);
-          
+
           if (Array.isArray(data)) {
-            this.files = data.filter(file => 
-              file.type === 'file' && file.name.toLowerCase().endsWith('.md')
+            const normalizedPath = this.path.replace(/\/$/, '');
+            const prefix = normalizedPath ? normalizedPath + '/' : '';
+
+            const validPath = !normalizedPath || data.every(item =>
+              item.path && item.path.startsWith(prefix)
             );
-          } else {
-            this.files = [];
-          }
-          
-          if (this.path && this.path !== '') {
-            const filesInPath = this.files.filter(file => 
-              file.path && file.path.startsWith(this.path + '/')
-            );
-            
-            if (filesInPath.length === 0) {
+
+            if (!validPath) {
               setTimeout(() => {
                 this.loadDirectory();
               }, 1000);
               return;
             }
-            
-            this.files = filesInPath;
+
+            this.files = data.filter(file =>
+              file.type === 'file' && file.name.toLowerCase().endsWith('.md') &&
+              (!normalizedPath || file.path.startsWith(prefix))
+            );
+          } else {
+            this.files = [];
           }
           
           if (this.sortAlphabetically) {
