@@ -404,7 +404,7 @@ class MarkdownsPeek {
   async loadDirectory() {
     const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
 
-
+    try{
       const data = await this.fetchGitHubContents(this.path);
 
       if (Array.isArray(data)) {
@@ -446,7 +446,9 @@ class MarkdownsPeek {
       if (this.files.length > 0) {
         this.loadFile(this.files[0].path);
       }
-    
+    } catch (error) {
+      filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
+    }
   }
   
 
