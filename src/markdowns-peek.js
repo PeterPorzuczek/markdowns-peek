@@ -401,10 +401,6 @@ class MarkdownsPeek {
     return response.json();
   }
 
-  normalizePath(p) {
-    return (p || '').trim().replace(/^\/+|\/+$/g, '');
-  }
-
   async loadDirectory() {
     const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
 
@@ -412,12 +408,17 @@ class MarkdownsPeek {
       const data = await this.fetchGitHubContents(this.path);
 
       if (Array.isArray(data)) {
-        const basePath = this.normalizePath(this.path);
-        const prefix = basePath ? basePath + '/' : '';
-        
+        const normalizedPath = (this.path || '')
+          .trim()
+          .replace(/\/+/g, '/')
+          .replace(/^\/+|\/+$/g, '');
+          
+        const prefix = normalizedPath ? normalizedPath + '/' : '';
+
         const validPath = Array.isArray(data) && data.every(item => {
-          const itemPath = this.normalizePath(item.path);
-          return itemPath.startsWith(prefix);
+          const url = item.html_url || '';
+
+          return url.includes(normalizedPath);
         });
 
         if (!validPath) {
@@ -429,7 +430,7 @@ class MarkdownsPeek {
 
         this.files = data.filter(file =>
           file.type === 'file' && file.name.toLowerCase().endsWith('.md') &&
-          (!basePath || file.path.startsWith(prefix))
+          (!normalizedPath || file.path.startsWith(prefix))
         );
       } else {
         this.files = [];
