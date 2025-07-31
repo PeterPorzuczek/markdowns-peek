@@ -51,7 +51,7 @@ export default [
       format: 'es',
       sourcemap: true
     },
-    external: ['marked', 'dompurify'],
+    external: ['snarkdown'],
     plugins: [
       resolve({
         browser: true,

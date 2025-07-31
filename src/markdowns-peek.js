@@ -1,5 +1,4 @@
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import snarkdown from 'snarkdown';
 import { styles } from './styles.js';
 import { defaultTexts } from './texts.js';
 import { generateDefaultPrefix } from './utils.js';
@@ -494,6 +493,8 @@ class MarkdownsPeek {
     });
   }
 
+  
+
   async loadFile(path) {
     const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
     const files = this.container.querySelectorAll(`[class~="${this.prefix}file"]`);
@@ -508,8 +509,7 @@ class MarkdownsPeek {
       const decodedContent = atob(data.content);
       const textContent = decodeURIComponent(escape(decodedContent));
       const readingTime = this.calculateReadingTime(textContent);
-      const htmlContent = marked(textContent);
-      const sanitizedHtml = DOMPurify.sanitize(htmlContent);
+      const sanitizedHtml = snarkdown(textContent);
       let title = this.formatFileName(data.name);
       const firstH1 = textContent.match(/^#\s+(.+)$/m);
       if (firstH1) {

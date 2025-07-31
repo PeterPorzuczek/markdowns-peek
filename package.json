@@ -1,6 +1,6 @@
 {
   "name": "markdowns-peek",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A beautiful GitHub Markdown file viewer for web applications",
   "main": "dist/markdowns-peek.js",
   "module": "dist/markdowns-peek.esm.js",
@@ -17,7 +17,6 @@
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
-
     "deploy": "gh-pages -d example",
     "predeploy": "npm run build && rimraf example/markdowns-peek.js && copyfiles -f dist/markdowns-peek.js example",
     "preserve": "npm run build && rimraf example/markdowns-peek.js && copyfiles -f dist/markdowns-peek.js example",
@@ -32,6 +31,7 @@
     "npm",
     "javascript"
   ],
+  "homepage": "https://piotrporzuczek.github.io/markdowns-peek",
   "author": "Piotr Porzuczek",
   "license": "LGPL-2.1",
   "browserslist": [
@@ -39,8 +39,7 @@
     "not IE 11"
   ],
   "dependencies": {
-    "dompurify": "^3.0.9",
-    "marked": "^12.0.0"
+    "snarkdown": "^2.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

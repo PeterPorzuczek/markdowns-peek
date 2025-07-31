@@ -132,6 +132,13 @@ export const styles = `
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
     padding-right: 8px;
+    white-space: normal;
+    line-height: 1.6;
+  }
+
+  .lib-mp-body br {
+    display: inline;
+    content: '';
   }
   
   .lib-mp-body::-webkit-scrollbar {
