@@ -4630,28 +4630,8 @@
       }
 
       async verifyPathAndLoad() {
-        if (!this.path || this.path === '') {
-          this.loadDirectory();
-          return;
-        }
-        
         try {
-          const headers = {
-            'Accept': 'application/vnd.github.v3+json'
-          };
-          if (this.token) {
-            headers['Authorization'] = `token ${this.token}`;
-          }
-          const response = await fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.path}?ref=${this.branch}`,
-            { headers }
-          );
-          if (response.ok) {
             this.loadDirectory();
-          } else {
-            const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
-            filesList.innerHTML = createErrorTemplate(`Path "${this.path}" not found`, this.texts, this.prefix);
-          }
         } catch (error) {
           const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
           filesList.innerHTML = createErrorTemplate(`Error loading path "${this.path}": ${error.message}`, this.texts, this.prefix);
@@ -4822,7 +4802,7 @@
 
 
 
-      async fetchGitHubContents(path = '') {
+      async fetchGitHubContents(path) {
         const headers = {
           'Accept': 'application/vnd.github.v3+json'
         };
@@ -4842,19 +4822,24 @@
         return response.json();
       }
 
+      normalizePath(p) {
+        return (p || '').trim().replace(/^\/+|\/+$/g, '');
+      }
+
       async loadDirectory() {
         const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
 
-        try {
+
           const data = await this.fetchGitHubContents(this.path);
 
           if (Array.isArray(data)) {
-            const normalizedPath = this.path.replace(/\/$/, '');
-            const prefix = normalizedPath ? normalizedPath + '/' : '';
-
-            const validPath = !normalizedPath || data.every(item =>
-              item.path && item.path.startsWith(prefix)
-            );
+            const basePath = this.normalizePath(this.path);
+            const prefix = basePath ? basePath + '/' : '';
+            
+            const validPath = Array.isArray(data) && data.every(item => {
+              const itemPath = this.normalizePath(item.path);
+              return itemPath.startsWith(prefix);
+            });
 
             if (!validPath) {
               setTimeout(() => {
@@ -4865,7 +4850,7 @@
 
             this.files = data.filter(file =>
               file.type === 'file' && file.name.toLowerCase().endsWith('.md') &&
-              (!normalizedPath || file.path.startsWith(prefix))
+              (!basePath || file.path.startsWith(prefix))
             );
           } else {
             this.files = [];
@@ -4881,11 +4866,7 @@
           if (this.files.length > 0) {
             this.loadFile(this.files[0].path);
           }
-        } catch (error) {
-          setTimeout(() => {
-            this.loadDirectory();
-          }, 1000);
-        }
+        
       }
       
 
