@@ -4779,7 +4779,7 @@
                   filesPanel.classList.remove('active');
                   overlay.classList.remove('active');
                   this.updateTextWidth();
-            }
+              }
             }
           });
         }
@@ -4822,50 +4822,73 @@
 
 
 
+      async fetchGitHubContents(path = '') {
+        const headers = {
+          'Accept': 'application/vnd.github.v3+json'
+        };
+        if (this.token) {
+          headers['Authorization'] = `token ${this.token}`;
+        }
+        
+        const response = await fetch(
+          `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}?ref=${this.branch}`,
+          { headers }
+        );
+        
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        
+        return response.json();
+      }
+
       async loadDirectory() {
         const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
+        
         try {
-          const headers = {
-            'Accept': 'application/vnd.github.v3+json'
-          };
-          if (this.token) {
-            headers['Authorization'] = `token ${this.token}`;
+          const data = await this.fetchGitHubContents(this.path);
+          
+          if (Array.isArray(data)) {
+            this.files = data.filter(file => 
+              file.type === 'file' && file.name.toLowerCase().endsWith('.md')
+            );
+          } else {
+            this.files = [];
           }
-          const response = await fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.path}?ref=${this.branch}`,
-            { headers }
-          );
-          if (!response.ok) {
-            throw new Error(response.statusText);
-          }
-          const data = await response.json();
-          this.files = data.filter(file => 
-            file.type === 'file' && file.name.toLowerCase().endsWith('.md')
-          );
+          
           if (this.path && this.path !== '') {
-            this.files.forEach(file => {
-              file.path = this.path + '/' + file.name;
-            });
-            const filesFromPath = this.files.filter(file => file.path.startsWith(this.path + '/'));
-            if (filesFromPath.length === 0) {
+            const filesInPath = this.files.filter(file => 
+              file.path && file.path.startsWith(this.path + '/')
+            );
+            
+            if (filesInPath.length === 0) {
               setTimeout(() => {
                 this.loadDirectory();
               }, 1000);
               return;
             }
+            
+            this.files = filesInPath;
           }
+          
           if (this.sortAlphabetically) {
             this.sortFilesAlphabetically();
           }
+          
           filesList.innerHTML = this.renderFileListHTML();
           this.attachFileListEvents();
+          
           if (this.files.length > 0) {
             this.loadFile(this.files[0].path);
           }
         } catch (error) {
-          filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
+          setTimeout(() => {
+            this.loadDirectory();
+          }, 1000);
         }
       }
+      
+
 
       sortFilesAlphabetically() {
         this.files.sort((a, b) => a.name.localeCompare(b.name));
@@ -4902,20 +4925,7 @@
         progress.style.transform = 'scaleX(0)';
         content.innerHTML = createLoadingTemplate(this.texts, this.prefix);
         try {
-          const headers = {
-            'Accept': 'application/vnd.github.v3+json'
-          };
-          if (this.token) {
-            headers['Authorization'] = `token ${this.token}`;
-          }
-          const response = await fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}?ref=${this.branch}`,
-            { headers }
-          );
-          if (!response.ok) {
-            throw new Error(response.statusText);
-          }
-          const data = await response.json();
+          const data = await this.fetchGitHubContents(path);
           const decodedContent = atob(data.content);
           const textContent = decodeURIComponent(escape(decodedContent));
           const readingTime = this.calculateReadingTime(textContent);

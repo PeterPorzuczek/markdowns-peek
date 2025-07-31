@@ -1,6 +1,6 @@
 {
   "name": "markdowns-peek",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A beautiful GitHub Markdown file viewer for web applications",
   "main": "dist/markdowns-peek.js",
   "module": "dist/markdowns-peek.esm.js",
