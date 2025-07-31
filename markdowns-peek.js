@@ -4624,9 +4624,38 @@
       initSync() {
         this.findContainer();
         this.renderSync();
-        this.loadDirectory();
+        this.verifyPathAndLoad();
         this.updateTextWidth();
         this.addResizeListener();
+      }
+
+      async verifyPathAndLoad() {
+        if (!this.path || this.path === '') {
+          this.loadDirectory();
+          return;
+        }
+        
+        try {
+          const headers = {
+            'Accept': 'application/vnd.github.v3+json'
+          };
+          if (this.token) {
+            headers['Authorization'] = `token ${this.token}`;
+          }
+          const response = await fetch(
+            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.path}?ref=${this.branch}`,
+            { headers }
+          );
+          if (response.ok) {
+            this.loadDirectory();
+          } else {
+            const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
+            filesList.innerHTML = createErrorTemplate(`Path "${this.path}" not found`, this.texts, this.prefix);
+          }
+        } catch (error) {
+          const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
+          filesList.innerHTML = createErrorTemplate(`Error loading path "${this.path}": ${error.message}`, this.texts, this.prefix);
+        }
       }
 
       findContainer() {
@@ -4750,7 +4779,7 @@
                   filesPanel.classList.remove('active');
                   overlay.classList.remove('active');
                   this.updateTextWidth();
-            }
+              }
             }
           });
         }
@@ -4793,50 +4822,73 @@
 
 
 
+      async fetchGitHubContents(path = '') {
+        const headers = {
+          'Accept': 'application/vnd.github.v3+json'
+        };
+        if (this.token) {
+          headers['Authorization'] = `token ${this.token}`;
+        }
+        
+        const response = await fetch(
+          `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}?ref=${this.branch}`,
+          { headers }
+        );
+        
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        
+        return response.json();
+      }
+
       async loadDirectory() {
         const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
+
         try {
-          const headers = {
-            'Accept': 'application/vnd.github.v3+json'
-          };
-          if (this.token) {
-            headers['Authorization'] = `token ${this.token}`;
+          const data = await this.fetchGitHubContents(this.path);
+
+          if (Array.isArray(data)) {
+            const normalizedPath = this.path.replace(/\/$/, '');
+            const prefix = normalizedPath ? normalizedPath + '/' : '';
+
+            const validPath = !normalizedPath || data.every(item =>
+              item.path && item.path.startsWith(prefix)
+            );
+
+            if (!validPath) {
+              setTimeout(() => {
+                this.loadDirectory();
+              }, 1000);
+              return;
+            }
+
+            this.files = data.filter(file =>
+              file.type === 'file' && file.name.toLowerCase().endsWith('.md') &&
+              (!normalizedPath || file.path.startsWith(prefix))
+            );
+          } else {
+            this.files = [];
           }
-          const response = await fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.path}?ref=${this.branch}`,
-            { headers }
-          );
-          if (!response.ok) {
-            throw new Error(response.statusText);
-          }
-          const data = await response.json();
-          this.files = data.filter(file => 
-            file.type === 'file' && file.name.toLowerCase().endsWith('.md')
-          );
+          
           if (this.sortAlphabetically) {
             this.sortFilesAlphabetically();
           }
+          
           filesList.innerHTML = this.renderFileListHTML();
           this.attachFileListEvents();
-          if (this.path && this.files.length > 0) {
-            const found = this.files.find(f => f.path === this.path);
-            if (found) {
-              this.loadFile(found.path);
-            } else {
-              this.loadFile(this.files[0].path);
-            }
-          } else if (this.files.length > 0) {
+          
+          if (this.files.length > 0) {
             this.loadFile(this.files[0].path);
           }
         } catch (error) {
-          if (this.path && this.path !== '') {
-            this.path = '';
+          setTimeout(() => {
             this.loadDirectory();
-            return;
-          }
-          filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
+          }, 1000);
         }
       }
+      
+
 
       sortFilesAlphabetically() {
         this.files.sort((a, b) => a.name.localeCompare(b.name));
@@ -4873,20 +4925,7 @@
         progress.style.transform = 'scaleX(0)';
         content.innerHTML = createLoadingTemplate(this.texts, this.prefix);
         try {
-          const headers = {
-            'Accept': 'application/vnd.github.v3+json'
-          };
-          if (this.token) {
-            headers['Authorization'] = `token ${this.token}`;
-          }
-          const response = await fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}?ref=${this.branch}`,
-            { headers }
-          );
-          if (!response.ok) {
-            throw new Error(response.statusText);
-          }
-          const data = await response.json();
+          const data = await this.fetchGitHubContents(path);
           const decodedContent = atob(data.content);
           const textContent = decodeURIComponent(escape(decodedContent));
           const readingTime = this.calculateReadingTime(textContent);
