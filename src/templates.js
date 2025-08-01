@@ -27,12 +27,23 @@ export const createFileTemplate = (file, index, displayName, size, prefix) => `
   </div>
 `;
 
-export const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix) => `
+export const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl) => `
   <header class="${prefix}header">
     <h1 class="${prefix}title" title="${title}">${title}</h1>
-    <div class="${prefix}info">
-      <span>${readingTime} ${texts.minRead}</span>
-      <span>${fileSize}</span>
+    <div class="${prefix}header-row">
+      <div class="${prefix}info">
+        <span>${readingTime} ${texts.minRead}</span>
+        <span>${fileSize}</span>
+      </div>
+      ${htmlUrl ? `
+        <a href="${htmlUrl}" target="_blank" rel="noopener noreferrer" class="${prefix}github-link" title="Open on GitHub">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <path d="M15 3h6v6"/>
+            <path d="M10 14L21 3"/>
+          </svg>
+        </a>
+      ` : ''}
     </div>
   </header>
   <article class="${prefix}body">

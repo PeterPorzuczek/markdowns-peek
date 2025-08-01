@@ -25,6 +25,7 @@ class MarkdownsPeek {
     this.height = options.height || '600px';
     this.disableStyles = options.disableStyles || false;
     this.sortAlphabetically = options.sortAlphabetically || false;
+    this.showGitHubLink = options.showGitHubLink || false;
     this.texts = { ...defaultTexts, ...options.texts };
     this.prefix = options.prefix || generateDefaultPrefix();
     this.container = null;
@@ -493,7 +494,21 @@ class MarkdownsPeek {
       const textContent = decodeURIComponent(escape(decodedContent));
       const readingTime = this.calculateReadingTime(textContent);
       const htmlContent = marked(textContent);
-      const sanitizedHtml = DOMPurify.sanitize(htmlContent);
+      let sanitizedHtml = DOMPurify.sanitize(htmlContent);
+      
+      // Add target="_blank" to all links
+      sanitizedHtml = sanitizedHtml.replace(
+        /<a\s+([^>]*?)>/gi,
+        (match, attributes) => {
+          // Check if target already exists
+          if (attributes.includes('target=')) {
+            return match;
+          }
+          // Add target="_blank" and rel="noopener noreferrer"
+          return `<a ${attributes} target="_blank" rel="noopener noreferrer">`;
+        }
+      );
+      
       let title = this.formatFileName(data.name);
       const firstH1 = textContent.match(/^#\s+(.+)$/m);
       if (firstH1) {
@@ -505,7 +520,8 @@ class MarkdownsPeek {
         this.formatFileSize(data.size),
         sanitizedHtml,
         this.texts,
-        this.prefix
+        this.prefix,
+        this.showGitHubLink ? data.html_url : null
       );
       this.updateTextWidth();
       const body = content.querySelector(`[class~="${this.prefix}body"]`);

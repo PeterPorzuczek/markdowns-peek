@@ -32,6 +32,7 @@ const viewer = new MarkdownsPeek(container, {
   path: "articles-md",
   disableStyles: false,
   sortAlphabetically: false,
+  showGitHubLink: false, // Show external link icon (default: false)
   texts: {
     menu: 'Menu',
     files: 'Files',

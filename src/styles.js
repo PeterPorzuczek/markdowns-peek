@@ -114,6 +114,12 @@ export const styles = `
     cursor: default;
   }
   
+  .lib-mp-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
   .lib-mp-info {
     font-size: 10px;
     color: #666;
@@ -122,6 +128,29 @@ export const styles = `
   
   .lib-mp-info span {
     margin-right: 15px;
+  }
+  
+  .lib-mp-github-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .lib-mp-github-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  .lib-mp-github-link svg {
+    width: 16px;
+    height: 16px;
   }
   
   .lib-mp-body {
@@ -413,6 +442,15 @@ export const styles = `
     background: #000;
   }
   
+  .lib-mp-container.light .lib-mp-github-link {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+  
+  .lib-mp-container.light .lib-mp-github-link:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  
   .lib-mp-menu-toggle {
     display: none;
     position: absolute;
@@ -500,6 +538,10 @@ export const styles = `
       font-size: 28px;
       white-space: nowrap;
       word-wrap: break-word;
+    }
+    .lib-mp-github-link {
+      width: 32px;
+      height: 32px;
     }
     .lib-mp-body {
       padding: 30px 20px 40px 20px;
