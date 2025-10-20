@@ -4422,13 +4422,13 @@
   </div>
 `;
 
-    const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl) => `
+    const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl, articleDate) => `
   <header class="${prefix}header">
     <h1 class="${prefix}title" title="${title}">${title}</h1>
     <div class="${prefix}header-row">
       <div class="${prefix}info">
         <span>${readingTime} ${texts.minRead}</span>
-        <span>${fileSize}</span>
+        ${articleDate ? `<span>${articleDate}</span>` : `<span>${fileSize}</span>`}
       </div>
       ${htmlUrl ? `
         <a href="${htmlUrl}" target="_blank" rel="noopener noreferrer" class="${prefix}github-link" title="Open on GitHub">
@@ -4505,6 +4505,11 @@
         this.container = null;
         this.currentFile = null;
         this.files = [];
+        this.isInitialized = false;
+        this.isLoadingDirectory = false;
+        this.isLoadingFile = false;
+        this.directoryRetryAttempts = 0;
+        this.maxDirectoryRetries = 3;
         
         this.injectStylesSync();
         if (document.readyState === 'loading') {
@@ -4676,6 +4681,10 @@
       }
 
       initSync() {
+        if (this.isInitialized) {
+          return;
+        }
+        this.isInitialized = true;
         this.findContainer();
         this.renderSync();
         this.verifyPathAndLoad();
@@ -4847,7 +4856,57 @@
         return kb + 'KB';
       }
 
+      parseMetadataFromComment(content) {
+        // Allow optional whitespace at the beginning
+        const metadataRegex = /^\s*<!--\s*([\s\S]*?)\s*-->/;
+        const match = content.match(metadataRegex);
+        
+        if (!match) {
+          return null;
+        }
+        
+        const metadataText = match[1];
+        const metadata = {};
+        
+        // Parse date - support both with and without quotes, and different hyphen types
+        const dateMatch = metadataText.match(/date:\s*["']?(\d{4}[\-\u2010-\u2015]\d{2}[\-\u2010-\u2015]\d{2})["']?/);
+        if (dateMatch) {
+          // Normalize hyphens to standard minus sign
+          metadata.date = dateMatch[1].replace(/[\u2010-\u2015]/g, '-');
+        }
+        
+        // Parse title
+        const titleMatch = metadataText.match(/title:\s*["']([^"']+)["']/);
+        if (titleMatch) {
+          metadata.title = titleMatch[1];
+        }
+        
+        // Parse description
+        const descriptionMatch = metadataText.match(/description:\s*["']([^"']+)["']/);
+        if (descriptionMatch) {
+          metadata.description = descriptionMatch[1];
+        }
+        
+        // Parse tags
+        const tagsMatch = metadataText.match(/tags:\s*\[([^\]]+)\]/);
+        if (tagsMatch) {
+          metadata.tags = tagsMatch[1].split(',').map(tag => tag.trim().replace(/["']/g, ''));
+        }
+        
+        return metadata;
+      }
 
+      formatDate(dateString) {
+        if (!dateString) return null;
+        
+        const date = new Date(dateString);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        
+        return `${day} ${month} ${year}`;
+      }
 
       processStyles(css) {
         const processed = css.replace(/\.lib-mp-/g, `.${this.prefix}`);
@@ -4877,6 +4936,11 @@
       }
 
       async loadDirectory() {
+        if (this.isLoadingDirectory) {
+          return;
+        }
+        
+        this.isLoadingDirectory = true;
         const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
 
         try{
@@ -4896,7 +4960,9 @@
               return url.includes(normalizedPath);
             });
 
-            if (!validPath) {
+            if (!validPath && this.directoryRetryAttempts < this.maxDirectoryRetries) {
+              this.directoryRetryAttempts++;
+              this.isLoadingDirectory = false;
               setTimeout(() => {
                 this.loadDirectory();
               }, 1000);
@@ -4911,6 +4977,8 @@
             this.files = [];
           }
           
+          this.directoryRetryAttempts = 0;
+          
           if (this.sortAlphabetically) {
             this.sortFilesAlphabetically();
           }
@@ -4921,7 +4989,11 @@
           if (this.files.length > 0) {
             this.loadFile(this.files[0].path);
           }
+          
+          this.isLoadingDirectory = false;
         } catch (error) {
+          this.isLoadingDirectory = false;
+          this.directoryRetryAttempts = 0;
           filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
         }
       }
@@ -4954,6 +5026,11 @@
       }
 
       async loadFile(path) {
+        if (this.isLoadingFile || this.currentFile === path) {
+          return;
+        }
+        
+        this.isLoadingFile = true;
         const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
         const files = this.container.querySelectorAll(`[class~="${this.prefix}file"]`);
         const progress = this.container.querySelector(`[class~="${this.prefix}progress"]`);
@@ -4966,19 +5043,21 @@
           const data = await this.fetchGitHubContents(path);
           const decodedContent = atob(data.content);
           const textContent = decodeURIComponent(escape(decodedContent));
+          
+          // Parse metadata from HTML comment
+          const metadata = this.parseMetadataFromComment(textContent);
+          const articleDate = metadata && metadata.date ? this.formatDate(metadata.date) : null;
+          
           const readingTime = this.calculateReadingTime(textContent);
           const htmlContent = marked(textContent);
           let sanitizedHtml = purify.sanitize(htmlContent);
           
-          // Add target="_blank" to all links
           sanitizedHtml = sanitizedHtml.replace(
             /<a\s+([^>]*?)>/gi,
             (match, attributes) => {
-              // Check if target already exists
               if (attributes.includes('target=')) {
                 return match;
               }
-              // Add target="_blank" and rel="noopener noreferrer"
               return `<a ${attributes} target="_blank" rel="noopener noreferrer">`;
             }
           );
@@ -4995,7 +5074,8 @@
             sanitizedHtml,
             this.texts,
             this.prefix,
-            this.showGitHubLink ? data.html_url : null
+            this.showGitHubLink ? data.html_url : null,
+            articleDate
           );
           this.updateTextWidth();
           const body = content.querySelector(`[class~="${this.prefix}body"]`);
@@ -5006,7 +5086,9 @@
             progress.style.transform = `scaleX(${percentage})`;
           });
           this.currentFile = path;
+          this.isLoadingFile = false;
         } catch (error) {
+          this.isLoadingFile = false;
           content.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
         }
       }
@@ -5026,10 +5108,14 @@
         this.repo = repo;
         this.branch = options.branch || this.branch;
         this.path = options.path || this.path;
+        this.isLoadingDirectory = false;
+        this.directoryRetryAttempts = 0;
         this.loadDirectory();
       }
 
       refresh() {
+        this.isLoadingDirectory = false;
+        this.directoryRetryAttempts = 0;
         this.loadDirectory();
       }
 

@@ -382,7 +382,57 @@ class MarkdownsPeek {
     return kb + 'KB';
   }
 
+  parseMetadataFromComment(content) {
+    // Allow optional whitespace at the beginning
+    const metadataRegex = /^\s*<!--\s*([\s\S]*?)\s*-->/;
+    const match = content.match(metadataRegex);
+    
+    if (!match) {
+      return null;
+    }
+    
+    const metadataText = match[1];
+    const metadata = {};
+    
+    // Parse date - support both with and without quotes, and different hyphen types
+    const dateMatch = metadataText.match(/date:\s*["']?(\d{4}[\-\u2010-\u2015]\d{2}[\-\u2010-\u2015]\d{2})["']?/);
+    if (dateMatch) {
+      // Normalize hyphens to standard minus sign
+      metadata.date = dateMatch[1].replace(/[\u2010-\u2015]/g, '-');
+    }
+    
+    // Parse title
+    const titleMatch = metadataText.match(/title:\s*["']([^"']+)["']/);
+    if (titleMatch) {
+      metadata.title = titleMatch[1];
+    }
+    
+    // Parse description
+    const descriptionMatch = metadataText.match(/description:\s*["']([^"']+)["']/);
+    if (descriptionMatch) {
+      metadata.description = descriptionMatch[1];
+    }
+    
+    // Parse tags
+    const tagsMatch = metadataText.match(/tags:\s*\[([^\]]+)\]/);
+    if (tagsMatch) {
+      metadata.tags = tagsMatch[1].split(',').map(tag => tag.trim().replace(/["']/g, ''));
+    }
+    
+    return metadata;
+  }
 
+  formatDate(dateString) {
+    if (!dateString) return null;
+    
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${day} ${month} ${year}`;
+  }
 
   processStyles(css) {
     const processed = css.replace(/\.lib-mp-/g, `.${this.prefix}`);
@@ -519,6 +569,11 @@ class MarkdownsPeek {
       const data = await this.fetchGitHubContents(path);
       const decodedContent = atob(data.content);
       const textContent = decodeURIComponent(escape(decodedContent));
+      
+      // Parse metadata from HTML comment
+      const metadata = this.parseMetadataFromComment(textContent);
+      const articleDate = metadata && metadata.date ? this.formatDate(metadata.date) : null;
+      
       const readingTime = this.calculateReadingTime(textContent);
       const htmlContent = marked(textContent);
       let sanitizedHtml = DOMPurify.sanitize(htmlContent);
@@ -545,7 +600,8 @@ class MarkdownsPeek {
         sanitizedHtml,
         this.texts,
         this.prefix,
-        this.showGitHubLink ? data.html_url : null
+        this.showGitHubLink ? data.html_url : null,
+        articleDate
       );
       this.updateTextWidth();
       const body = content.querySelector(`[class~="${this.prefix}body"]`);
