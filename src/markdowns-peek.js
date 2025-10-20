@@ -31,6 +31,11 @@ class MarkdownsPeek {
     this.container = null;
     this.currentFile = null;
     this.files = [];
+    this.isInitialized = false;
+    this.isLoadingDirectory = false;
+    this.isLoadingFile = false;
+    this.directoryRetryAttempts = 0;
+    this.maxDirectoryRetries = 3;
     
     this.injectStylesSync();
     if (document.readyState === 'loading') {
@@ -202,6 +207,10 @@ class MarkdownsPeek {
   }
 
   initSync() {
+    if (this.isInitialized) {
+      return;
+    }
+    this.isInitialized = true;
     this.findContainer();
     this.renderSync();
     this.verifyPathAndLoad();
@@ -403,6 +412,11 @@ class MarkdownsPeek {
   }
 
   async loadDirectory() {
+    if (this.isLoadingDirectory) {
+      return;
+    }
+    
+    this.isLoadingDirectory = true;
     const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
 
     try{
@@ -422,7 +436,9 @@ class MarkdownsPeek {
           return url.includes(normalizedPath);
         });
 
-        if (!validPath) {
+        if (!validPath && this.directoryRetryAttempts < this.maxDirectoryRetries) {
+          this.directoryRetryAttempts++;
+          this.isLoadingDirectory = false;
           setTimeout(() => {
             this.loadDirectory();
           }, 1000);
@@ -437,6 +453,8 @@ class MarkdownsPeek {
         this.files = [];
       }
       
+      this.directoryRetryAttempts = 0;
+      
       if (this.sortAlphabetically) {
         this.sortFilesAlphabetically();
       }
@@ -447,7 +465,11 @@ class MarkdownsPeek {
       if (this.files.length > 0) {
         this.loadFile(this.files[0].path);
       }
+      
+      this.isLoadingDirectory = false;
     } catch (error) {
+      this.isLoadingDirectory = false;
+      this.directoryRetryAttempts = 0;
       filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
     }
   }
@@ -480,6 +502,11 @@ class MarkdownsPeek {
   }
 
   async loadFile(path) {
+    if (this.isLoadingFile || this.currentFile === path) {
+      return;
+    }
+    
+    this.isLoadingFile = true;
     const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
     const files = this.container.querySelectorAll(`[class~="${this.prefix}file"]`);
     const progress = this.container.querySelector(`[class~="${this.prefix}progress"]`);
@@ -496,15 +523,12 @@ class MarkdownsPeek {
       const htmlContent = marked(textContent);
       let sanitizedHtml = DOMPurify.sanitize(htmlContent);
       
-      // Add target="_blank" to all links
       sanitizedHtml = sanitizedHtml.replace(
         /<a\s+([^>]*?)>/gi,
         (match, attributes) => {
-          // Check if target already exists
           if (attributes.includes('target=')) {
             return match;
           }
-          // Add target="_blank" and rel="noopener noreferrer"
           return `<a ${attributes} target="_blank" rel="noopener noreferrer">`;
         }
       );
@@ -532,7 +556,9 @@ class MarkdownsPeek {
         progress.style.transform = `scaleX(${percentage})`;
       });
       this.currentFile = path;
+      this.isLoadingFile = false;
     } catch (error) {
+      this.isLoadingFile = false;
       content.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
     }
   }
@@ -552,10 +578,14 @@ class MarkdownsPeek {
     this.repo = repo;
     this.branch = options.branch || this.branch;
     this.path = options.path || this.path;
+    this.isLoadingDirectory = false;
+    this.directoryRetryAttempts = 0;
     this.loadDirectory();
   }
 
   refresh() {
+    this.isLoadingDirectory = false;
+    this.directoryRetryAttempts = 0;
     this.loadDirectory();
   }
 
