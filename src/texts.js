@@ -6,5 +6,6 @@ export const defaultTexts = {
   selectFile: 'SELECT FILE TO VIEW',
   error: 'ERROR: ',
   noFiles: 'NO FILES FOUND',
-  minRead: 'MIN READ'
+  minRead: 'MIN READ',
+  notFound: 'ARTICLE NOT FOUND'
 }; 

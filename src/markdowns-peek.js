@@ -26,6 +26,8 @@ class MarkdownsPeek {
     this.disableStyles = options.disableStyles || false;
     this.sortAlphabetically = options.sortAlphabetically || false;
     this.showGitHubLink = options.showGitHubLink || false;
+    this.basePath = options.basePath || null;
+    this.enableRouting = options.enableRouting !== undefined ? options.enableRouting : (this.basePath !== null);
     this.texts = { ...defaultTexts, ...options.texts };
     this.prefix = options.prefix || generateDefaultPrefix();
     this.container = null;
@@ -36,6 +38,7 @@ class MarkdownsPeek {
     this.isLoadingFile = false;
     this.directoryRetryAttempts = 0;
     this.maxDirectoryRetries = 3;
+    this.popstateHandler = null;
     
     this.injectStylesSync();
     if (document.readyState === 'loading') {
@@ -213,6 +216,7 @@ class MarkdownsPeek {
     this.isInitialized = true;
     this.findContainer();
     this.renderSync();
+    this.setupRouting();
     this.verifyPathAndLoad();
     this.updateTextWidth();
     this.addResizeListener();
@@ -434,6 +438,104 @@ class MarkdownsPeek {
     return `${day} ${month} ${year}`;
   }
 
+  // Routing functions
+  getArticleUrlPath(filePath) {
+    if (!this.enableRouting || !this.basePath) {
+      return null;
+    }
+    
+    // Encode file path for URL
+    const encodedPath = encodeURIComponent(filePath);
+    return `/${this.basePath}/${encodedPath}`;
+  }
+
+  parseUrlForArticle() {
+    if (!this.enableRouting || !this.basePath) {
+      return null;
+    }
+    
+    const pathname = window.location.pathname;
+    const basePrefix = `/${this.basePath}/`;
+    
+    if (!pathname.startsWith(basePrefix)) {
+      return null;
+    }
+    
+    // Extract and decode file path
+    const encodedPath = pathname.substring(basePrefix.length);
+    try {
+      return decodeURIComponent(encodedPath);
+    } catch (e) {
+      console.error('Failed to decode article path:', e);
+      return null;
+    }
+  }
+
+  updateUrlForArticle(filePath, replace = false) {
+    if (!this.enableRouting || !this.basePath) {
+      return;
+    }
+    
+    const url = this.getArticleUrlPath(filePath);
+    if (url) {
+      if (replace) {
+        window.history.replaceState({ filePath }, '', url);
+      } else {
+        window.history.pushState({ filePath }, '', url);
+      }
+    }
+  }
+
+  setupRouting() {
+    if (!this.enableRouting) {
+      return;
+    }
+    
+    // Handle browser back/forward buttons
+    this.popstateHandler = (event) => {
+      if (event.state && event.state.filePath) {
+        this.loadFile(event.state.filePath, true);
+      } else {
+        // Return to base path without any file selected
+        const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
+        if (content) {
+          content.innerHTML = `<div class="${this.prefix}empty">${this.texts.selectFile}</div>`;
+        }
+        this.currentFile = null;
+        const files = this.container.querySelectorAll(`[class~="${this.prefix}file"]`);
+        files.forEach(file => file.classList.remove('active'));
+      }
+    };
+    
+    window.addEventListener('popstate', this.popstateHandler);
+  }
+
+  loadArticleFromUrl() {
+    const filePath = this.parseUrlForArticle();
+    if (filePath) {
+      // Check if file exists in our list
+      const fileExists = this.files.some(f => f.path === filePath);
+      if (fileExists) {
+        this.loadFile(filePath, true);
+      } else {
+        // File doesn't exist - show 404
+        this.show404();
+      }
+    } else {
+      // No article in URL - load first file if available
+      if (this.files.length > 0) {
+        this.loadFile(this.files[0].path, false);
+      }
+    }
+  }
+
+  show404() {
+    const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
+    if (content) {
+      content.innerHTML = `<div class="${this.prefix}error">${this.texts.notFound}</div>`;
+    }
+  }
+
   processStyles(css) {
     const processed = css.replace(/\.lib-mp-/g, `.${this.prefix}`);
     return processed;
@@ -512,7 +614,11 @@ class MarkdownsPeek {
       filesList.innerHTML = this.renderFileListHTML();
       this.attachFileListEvents();
       
-      if (this.files.length > 0) {
+      // Check if we should load article from URL (deep linking)
+      if (this.enableRouting) {
+        this.loadArticleFromUrl();
+      } else if (this.files.length > 0) {
+        // No routing - load first file as before
         this.loadFile(this.files[0].path);
       }
       
@@ -551,7 +657,7 @@ class MarkdownsPeek {
     });
   }
 
-  async loadFile(path) {
+  async loadFile(path, fromUrl = false) {
     if (this.isLoadingFile || this.currentFile === path) {
       return;
     }
@@ -593,6 +699,11 @@ class MarkdownsPeek {
       if (firstH1) {
         title = firstH1[1].toUpperCase();
       }
+      
+      // Get full article URL for "open in new tab" button
+      const articleUrl = this.enableRouting ? this.getArticleUrlPath(path) : null;
+      const fullArticleUrl = articleUrl ? `${window.location.origin}${articleUrl}` : null;
+      
       content.innerHTML = createFileContentTemplate(
         title,
         readingTime,
@@ -601,7 +712,8 @@ class MarkdownsPeek {
         this.texts,
         this.prefix,
         this.showGitHubLink ? data.html_url : null,
-        articleDate
+        articleDate,
+        fullArticleUrl
       );
       this.updateTextWidth();
       const body = content.querySelector(`[class~="${this.prefix}body"]`);
@@ -612,10 +724,21 @@ class MarkdownsPeek {
         progress.style.transform = `scaleX(${percentage})`;
       });
       this.currentFile = path;
+      
+      // Update URL if not coming from URL navigation
+      if (!fromUrl) {
+        this.updateUrlForArticle(path);
+      }
+      
       this.isLoadingFile = false;
     } catch (error) {
       this.isLoadingFile = false;
       content.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
+      
+      // Show 404 if file not found and routing is enabled
+      if (error.message.includes('404') || error.message.includes('Not Found')) {
+        this.show404();
+      }
     }
   }
 
@@ -649,6 +772,13 @@ class MarkdownsPeek {
     if (window.viewerInstances && window.viewerInstances[this.containerId]) {
       delete window.viewerInstances[this.containerId];
     }
+    
+    // Remove popstate handler
+    if (this.popstateHandler) {
+      window.removeEventListener('popstate', this.popstateHandler);
+      this.popstateHandler = null;
+    }
+    
     this.container.innerHTML = '';
   }
 }

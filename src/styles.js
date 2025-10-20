@@ -130,6 +130,13 @@ export const styles = `
     margin-right: 15px;
   }
   
+  .lib-mp-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .lib-mp-article-link,
   .lib-mp-github-link {
     display: flex;
     align-items: center;
@@ -143,11 +150,13 @@ export const styles = `
     transition: all 0.2s ease;
   }
   
+  .lib-mp-article-link:hover,
   .lib-mp-github-link:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
   }
   
+  .lib-mp-article-link svg,
   .lib-mp-github-link svg {
     width: 16px;
     height: 16px;
@@ -442,11 +451,13 @@ export const styles = `
     background: #000;
   }
   
+  .lib-mp-container.light .lib-mp-article-link,
   .lib-mp-container.light .lib-mp-github-link {
     background: rgba(0, 0, 0, 0.05);
     color: #333;
   }
   
+  .lib-mp-container.light .lib-mp-article-link:hover,
   .lib-mp-container.light .lib-mp-github-link:hover {
     background: rgba(0, 0, 0, 0.1);
   }
@@ -539,6 +550,7 @@ export const styles = `
       white-space: nowrap;
       word-wrap: break-word;
     }
+    .lib-mp-article-link,
     .lib-mp-github-link {
       width: 32px;
       height: 32px;
