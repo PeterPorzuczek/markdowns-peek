@@ -5076,32 +5076,24 @@
       }
 
       setupRouting() {
-        if (!this.enableRouting) {
-          return;
-        }
+        if (!this.enableRouting) return;
         
-        // Handle browser back/forward buttons
         this.popstateHandler = (event) => {
-          // Update visibility based on URL
           this.updateContainerVisibility();
           
-          // Check if this URL belongs to this instance
           const currentPath = window.location.pathname;
           const basePrefix = `/${this.basePath}/`;
           
-          // If URL doesn't match this instance's basePath, ignore it
           if (!currentPath.startsWith(basePrefix) && currentPath !== `/${this.basePath}`) {
             return;
           }
           
           if (event.state && event.state.filePath) {
-            // Navigating to an article - hide files if needed
             if (this.hideFilesOnRoute) {
               this.hideFilesPanel();
             }
             this.loadFile(event.state.filePath, true, true);
           } else {
-            // Return to base path without any file selected - show files panel
             this.showFilesPanel();
             const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
             if (content) {
@@ -5118,40 +5110,34 @@
 
       checkIfUrlMatchesInstance() {
         if (!this.enableRouting || !this.basePath) {
-          return true; // If routing is disabled, always show
+          return true;
         }
         
         const currentPath = window.location.pathname;
         const basePrefix = `/${this.basePath}/`;
         
-        // Check if current URL starts with this instance's basePath
         return currentPath.startsWith(basePrefix);
       }
       
       updateContainerVisibility() {
         if (!this.container) return;
         
-        // Don't hide containers if loadFirstFileAutomatically is false (demo/index pages)
-        // or if hideFilesOnRoute is disabled
         if (!this.hideFilesOnRoute || !this.loadFirstFileAutomatically) {
           this.container.style.display = '';
           return;
         }
         
-        const matches = this.checkIfUrlMatchesInstance();
-        if (matches) {
+        const currentPath = window.location.pathname;
+        const myBasePath = `/${this.basePath}/`;
+        const isMyRoute = currentPath.startsWith(myBasePath);
+        const isArticleRoute = currentPath.match(/^\/[^\/]+\/.+/);
+        
+        if (isMyRoute) {
           this.container.style.display = '';
+        } else if (isArticleRoute) {
+          this.container.style.display = 'none';
         } else {
-          // Only hide if URL matches another basePath pattern
-          const currentPath = window.location.pathname;
-          // Check if URL looks like it's targeting an article (has a basePath-like pattern)
-          const hasBasePath = currentPath.match(/^\/[^\/]+\/.+/);
-          if (hasBasePath) {
-            this.container.style.display = 'none';
-          } else {
-            // Show by default on pages without article-like URLs
-            this.container.style.display = '';
-          }
+          this.container.style.display = '';
         }
       }
 
@@ -5159,41 +5145,32 @@
         this.updateContainerVisibility();
         
         const filePath = this.parseUrlForArticle();
+        
         if (filePath) {
-          // Article is in URL and it matches this instance's basePath
-          // Hide files panel if option is enabled
           if (this.hideFilesOnRoute) {
             this.hideFilesPanel();
           }
           
-          // Check if file exists in our list
           const fileExists = this.files.some(f => f.path === filePath);
           if (fileExists) {
             this.loadFile(filePath, true, true);
           } else {
-            // File doesn't exist - show 404
             this.show404();
           }
-        } else {
-          // No article in URL for this instance
-          // Check if URL matches another instance's basePath
-          const currentPath = window.location.pathname;
-          const hasOtherBasePath = currentPath.match(/^\/[^\/]+\/.+/);
-          
-          if (hasOtherBasePath) {
-            // URL is for another instance - don't load anything and don't update URL
-            this.showFilesPanel();
-            return;
-          }
-          
-          // No article in any URL - show files panel
-          this.showFilesPanel();
-          
-          // Load first file based on loadFirstFileAutomatically option
-          if (this.files.length > 0 && this.loadFirstFileAutomatically) {
-            // Only load first file automatically if loadFirstFileAutomatically is true
-            this.loadFile(this.files[0].path, false, true);
-          }
+          return;
+        }
+        
+        this.showFilesPanel();
+        
+        const currentPath = window.location.pathname;
+        const isArticleRoute = currentPath.match(/^\/[^\/]+\/.+/);
+        
+        if (isArticleRoute) {
+          return;
+        }
+        
+        if (this.files.length > 0) {
+          this.loadFile(this.files[0].path, false, this.loadFirstFileAutomatically);
         }
       }
 

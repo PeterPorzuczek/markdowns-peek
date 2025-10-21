@@ -29,9 +29,7 @@
 
   <script src="/markdowns-peek.js"></script>
   <script>
-    // Common configuration
     const commonConfig = {
-      
       height: '100%',
       token: '',
       loadFirstFileAutomatically: true,
@@ -48,8 +46,7 @@
       }
     };
     
-    // Initialize first viewer for "blog" basePath with repo "echo"
-    const viewerblog = new MarkdownsPeek({
+    new MarkdownsPeek({
       ...commonConfig,
       containerId: 'markdown-viewer-blog',
       theme: 'dark',
@@ -58,8 +55,7 @@
       basePath: 'blog'
     });
     
-    // Initialize second viewer for "articles-md" basePath with repo "articles"
-    const viewerArticles = new MarkdownsPeek({
+    new MarkdownsPeek({
       ...commonConfig,
       containerId: 'markdown-viewer-articles',
       theme: 'light',
@@ -68,26 +64,6 @@
       path: 'articles-md',
       basePath: 'articles'
     });
-    
-    // Additional logic to ensure at least one container is visible
-    function ensureVisibility() {
-      const blogContainer = document.getElementById('markdown-viewer-blog');
-      const articlesContainer = document.getElementById('markdown-viewer-articles');
-      
-      // If both are hidden (no URL match), show the first one by default
-      if (blogContainer && articlesContainer) {
-        const blogHidden = blogContainer.style.display === 'none';
-        const articlesHidden = articlesContainer.style.display === 'none';
-        
-        if (blogHidden && articlesHidden) {
-          blogContainer.style.display = '';
-        }
-      }
-    }
-    
-    // Check visibility after a short delay to allow widgets to initialize
-    setTimeout(ensureVisibility, 100);
-    window.addEventListener('popstate', () => setTimeout(ensureVisibility, 100));
   </script>
 
 </body>
