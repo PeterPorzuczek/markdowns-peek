@@ -3,82 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Vanilla SPA</title>
+  <title>Articles - Markdowns Peek</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      font-family: sans-serif;
-      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
     }
-    nav a {
-      margin-right: 15px;
-      text-decoration: none;
-      color: blue;
-    }
-    nav a:hover {
-      text-decoration: underline;
+    #markdown-viewer-blog,
+    #markdown-viewer-articles {
+      width: 100%;
+      height: 100vh;
     }
   </style>
 </head>
 <body>
 
-  <nav>
-    <a href="/markdowns-peek/">Home</a>
-    <a href="/markdowns-peek/about">About</a>
-    <a href="/markdowns-peek/contact">Contact</a>
-  </nav>
+  <div id="markdown-viewer-blog"></div>
+  <div id="markdown-viewer-articles"></div>
 
-  <div id="app">
-    <h1>Loading...</h1>
-  </div>
-
+  <script src="/markdowns-peek.js"></script>
   <script>
-    const app = document.getElementById('app');
-
-    const routes = {
-      '/markdowns-peek/': () => {
-        document.title = 'Home';
-        app.innerHTML = `
-          <h1>Home Page</h1>
-          <p>Welcome to the homepage. Choose a page above.</p>
-        `;
-      },
-      '/markdowns-peek/about': () => {
-        document.title = 'About';
-        app.innerHTML = `
-          <h1>About Page</h1>
-          <p>This is the about page with some info.</p>
-        `;
-      },
-      '/markdowns-peek/contact': () => {
-        document.title = 'Contact';
-        app.innerHTML = `
-          <h1>Contact Page</h1>
-          <p>Contact us via this form or by email.</p>
-        `;
+    const commonConfig = {
+      height: '100%',
+      token: '',
+      loadFirstFileAutomatically: true,
+      hideFilesOnRoute: true,
+      texts: {
+        menu: 'MENU',
+        files: 'ARTICLES',
+        loading: 'LOADING...',
+        selectFile: 'SELECT ARTICLE TO VIEW',
+        error: 'ERROR: ',
+        noFiles: 'NO ARTICLES FOUND',
+        minRead: 'MIN READ',
+        notFound: 'ARTICLE NOT FOUND'
       }
     };
-
-    function router() {
-      const path = window.location.pathname;
-      const view = routes[path] || (() => {
-        document.title = '404';
-        app.innerHTML = '<h1>404 - Page Not Found</h1>';
-      });
-      view();
-    }
-
-    // Handle link clicks
-    document.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A' && e.target.href.startsWith(window.location.origin)) {
-        e.preventDefault();
-        const path = new URL(e.target.href).pathname;
-        history.pushState({}, '', path);
-        router();
-      }
+    
+    new MarkdownsPeek({
+      ...commonConfig,
+      containerId: 'markdown-viewer-blog',
+      theme: 'dark',
+      owner: 'PeterPorzuczek',
+      repo: 'echo',
+      basePath: 'blog'
     });
-
-    window.addEventListener('popstate', router);
-    window.addEventListener('DOMContentLoaded', router);
+    
+    new MarkdownsPeek({
+      ...commonConfig,
+      containerId: 'markdown-viewer-articles',
+      theme: 'light',
+      owner: 'PeterPorzuczek',
+      repo: 'articles',
+      path: 'articles-md',
+      basePath: 'articles'
+    });
   </script>
 
 </body>

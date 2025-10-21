@@ -3788,6 +3788,71 @@
     overflow: hidden;
   }
   
+  .lib-mp-container.fullscreen-article .lib-mp-files {
+    display: none;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-menu-toggle {
+    display: none;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-header-actions {
+    display: none;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-size: 13px;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-content {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-title,
+  .lib-mp-container.fullscreen-article .lib-mp-header-row {
+    max-width: 900px;
+    width: 100%;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-body {
+    padding-left: max(50px, calc((100% - 900px) / 2));
+    padding-right: max(50px, calc((100% - 900px) / 2 + 8px));
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-text {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: none;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-body::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-body:hover::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-body::-webkit-scrollbar-thumb {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-body:hover::-webkit-scrollbar-thumb {
+    opacity: 1;
+  }
+  
   .lib-mp-text * {
     max-width: 99%;
   }
@@ -3881,6 +3946,12 @@
     cursor: default;
   }
   
+  .lib-mp-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
   .lib-mp-info {
     font-size: 10px;
     color: #666;
@@ -3889,6 +3960,38 @@
   
   .lib-mp-info span {
     margin-right: 15px;
+  }
+  
+  .lib-mp-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .lib-mp-article-link,
+  .lib-mp-github-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .lib-mp-article-link:hover,
+  .lib-mp-github-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  .lib-mp-article-link svg,
+  .lib-mp-github-link svg {
+    width: 16px;
+    height: 16px;
   }
   
   .lib-mp-body {
@@ -4180,6 +4283,17 @@
     background: #000;
   }
   
+  .lib-mp-container.light .lib-mp-article-link,
+  .lib-mp-container.light .lib-mp-github-link {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+  
+  .lib-mp-container.light .lib-mp-article-link:hover,
+  .lib-mp-container.light .lib-mp-github-link:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  
   .lib-mp-menu-toggle {
     display: none;
     position: absolute;
@@ -4260,6 +4374,9 @@
       width: 100%;
       padding-top: 60px;
     }
+    .lib-mp-container.fullscreen-article .lib-mp-content {
+      padding-top: 0;
+    }
     .lib-mp-header {
       padding: 30px 20px 20px;
     }
@@ -4267,6 +4384,11 @@
       font-size: 28px;
       white-space: nowrap;
       word-wrap: break-word;
+    }
+    .lib-mp-article-link,
+    .lib-mp-github-link {
+      width: 32px;
+      height: 32px;
     }
     .lib-mp-body {
       padding: 30px 20px 40px 20px;
@@ -4288,6 +4410,19 @@
       display: block;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+    }
+    .lib-mp-container.fullscreen-article .lib-mp-body {
+      padding-left: 20px;
+      padding-right: calc(20px + 8px);
+    }
+    .lib-mp-container.fullscreen-article .lib-mp-header {
+      align-items: flex-start;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .lib-mp-container.fullscreen-article .lib-mp-title,
+    .lib-mp-container.fullscreen-article .lib-mp-header-row {
+      max-width: none;
     }
   }
   @media (max-width: 480px) {
@@ -4326,6 +4461,15 @@
       padding: 10px 12px;
       font-size: 11px;
     }
+    .lib-mp-container.fullscreen-article .lib-mp-body {
+      padding-left: 8px;
+      padding-right: calc(8px + 8px);
+    }
+    .lib-mp-container.fullscreen-article .lib-mp-header {
+      align-items: flex-start;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
   }
 `;
 
@@ -4336,7 +4480,8 @@
       selectFile: 'SELECT FILE TO VIEW',
       error: 'ERROR: ',
       noFiles: 'NO FILES FOUND',
-      minRead: 'MIN READ'
+      minRead: 'MIN READ',
+      notFound: 'ARTICLE NOT FOUND'
     };
 
     const generateRandomChars = (length = 8) => {
@@ -4380,12 +4525,32 @@
   </div>
 `;
 
-    const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix) => `
+    const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl, articleDate, articleUrl) => `
   <header class="${prefix}header">
     <h1 class="${prefix}title" title="${title}">${title}</h1>
-    <div class="${prefix}info">
-      <span>${readingTime} ${texts.minRead}</span>
-      <span>${fileSize}</span>
+    <div class="${prefix}header-row">
+      <div class="${prefix}info">
+        <span>${readingTime} ${texts.minRead}</span>
+        ${articleDate ? `<span>${articleDate}</span>` : `<span>${fileSize}</span>`}
+      </div>
+      <div class="${prefix}header-actions">
+        ${articleUrl ? `
+          <a href="${articleUrl}" class="${prefix}article-link" title="Open article page">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <path d="M15 3h6v6"/>
+              <path d="M10 14L21 3"/>
+            </svg>
+          </a>
+        ` : ''}
+        ${htmlUrl ? `
+          <a href="${htmlUrl}" target="_blank" rel="noopener noreferrer" class="${prefix}github-link" title="Open on GitHub">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </a>
+        ` : ''}
+      </div>
     </div>
   </header>
   <article class="${prefix}body">
@@ -4446,11 +4611,22 @@
         this.height = options.height || '600px';
         this.disableStyles = options.disableStyles || false;
         this.sortAlphabetically = options.sortAlphabetically || false;
+        this.showGitHubLink = options.showGitHubLink || false;
+        this.basePath = options.basePath || null;
+        this.enableRouting = options.enableRouting !== undefined ? options.enableRouting : (this.basePath !== null);
+        this.hideFilesOnRoute = options.hideFilesOnRoute !== undefined ? options.hideFilesOnRoute : true;
+        this.loadFirstFileAutomatically = options.loadFirstFileAutomatically !== undefined ? options.loadFirstFileAutomatically : true;
         this.texts = { ...defaultTexts, ...options.texts };
         this.prefix = options.prefix || generateDefaultPrefix();
         this.container = null;
         this.currentFile = null;
         this.files = [];
+        this.isInitialized = false;
+        this.isLoadingDirectory = false;
+        this.isLoadingFile = false;
+        this.directoryRetryAttempts = 0;
+        this.maxDirectoryRetries = 3;
+        this.popstateHandler = null;
         
         this.injectStylesSync();
         if (document.readyState === 'loading') {
@@ -4622,8 +4798,14 @@
       }
 
       initSync() {
+        if (this.isInitialized) {
+          return;
+        }
+        this.isInitialized = true;
         this.findContainer();
         this.renderSync();
+        this.setupRouting();
+        this.updateContainerVisibility();
         this.verifyPathAndLoad();
         this.updateTextWidth();
         this.addResizeListener();
@@ -4793,7 +4975,232 @@
         return kb + 'KB';
       }
 
+      parseMetadataFromComment(content) {
+        // Allow optional whitespace at the beginning
+        const metadataRegex = /^\s*<!--\s*([\s\S]*?)\s*-->/;
+        const match = content.match(metadataRegex);
+        
+        if (!match) {
+          return null;
+        }
+        
+        const metadataText = match[1];
+        const metadata = {};
+        
+        // Parse date - support both with and without quotes, and different hyphen types
+        const dateMatch = metadataText.match(/date:\s*["']?(\d{4}[\-\u2010-\u2015]\d{2}[\-\u2010-\u2015]\d{2})["']?/);
+        if (dateMatch) {
+          // Normalize hyphens to standard minus sign
+          metadata.date = dateMatch[1].replace(/[\u2010-\u2015]/g, '-');
+        }
+        
+        // Parse title
+        const titleMatch = metadataText.match(/title:\s*["']([^"']+)["']/);
+        if (titleMatch) {
+          metadata.title = titleMatch[1];
+        }
+        
+        // Parse description
+        const descriptionMatch = metadataText.match(/description:\s*["']([^"']+)["']/);
+        if (descriptionMatch) {
+          metadata.description = descriptionMatch[1];
+        }
+        
+        // Parse tags
+        const tagsMatch = metadataText.match(/tags:\s*\[([^\]]+)\]/);
+        if (tagsMatch) {
+          metadata.tags = tagsMatch[1].split(',').map(tag => tag.trim().replace(/["']/g, ''));
+        }
+        
+        return metadata;
+      }
 
+      formatDate(dateString) {
+        if (!dateString) return null;
+        
+        const date = new Date(dateString);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        
+        return `${day} ${month} ${year}`;
+      }
+
+      // Routing functions
+      getArticleUrlPath(filePath) {
+        if (!this.enableRouting || !this.basePath) {
+          return null;
+        }
+        
+        // Encode file path for URL
+        const encodedPath = encodeURIComponent(filePath);
+        return `/${this.basePath}/${encodedPath}`;
+      }
+
+      parseUrlForArticle() {
+        if (!this.enableRouting || !this.basePath) {
+          return null;
+        }
+        
+        const pathname = window.location.pathname;
+        const basePrefix = `/${this.basePath}/`;
+        
+        if (!pathname.startsWith(basePrefix)) {
+          return null;
+        }
+        
+        // Extract and decode file path
+        const encodedPath = pathname.substring(basePrefix.length);
+        try {
+          return decodeURIComponent(encodedPath);
+        } catch (e) {
+          console.error('Failed to decode article path:', e);
+          return null;
+        }
+      }
+
+      updateUrlForArticle(filePath, replace = false) {
+        if (!this.enableRouting || !this.basePath) {
+          return;
+        }
+        
+        const url = this.getArticleUrlPath(filePath);
+        if (url) {
+          if (replace) {
+            window.history.replaceState({ filePath }, '', url);
+          } else {
+            window.history.pushState({ filePath }, '', url);
+          }
+        }
+      }
+
+      setupRouting() {
+        if (!this.enableRouting) return;
+        
+        this.popstateHandler = (event) => {
+          this.updateContainerVisibility();
+          
+          const currentPath = window.location.pathname;
+          const basePrefix = `/${this.basePath}/`;
+          
+          if (!currentPath.startsWith(basePrefix) && currentPath !== `/${this.basePath}`) {
+            return;
+          }
+          
+          if (event.state && event.state.filePath) {
+            if (this.hideFilesOnRoute) {
+              this.hideFilesPanel();
+            }
+            this.loadFile(event.state.filePath, true, true);
+          } else {
+            this.showFilesPanel();
+            const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
+            if (content) {
+              content.innerHTML = `<div class="${this.prefix}empty">${this.texts.selectFile}</div>`;
+            }
+            this.currentFile = null;
+            const files = this.container.querySelectorAll(`[class~="${this.prefix}file"]`);
+            files.forEach(file => file.classList.remove('active'));
+          }
+        };
+        
+        window.addEventListener('popstate', this.popstateHandler);
+      }
+
+      checkIfUrlMatchesInstance() {
+        if (!this.enableRouting || !this.basePath) {
+          return true;
+        }
+        
+        const currentPath = window.location.pathname;
+        const basePrefix = `/${this.basePath}/`;
+        
+        return currentPath.startsWith(basePrefix);
+      }
+      
+      updateContainerVisibility() {
+        if (!this.container) return;
+        
+        if (!this.hideFilesOnRoute || !this.loadFirstFileAutomatically) {
+          this.container.style.display = '';
+          return;
+        }
+        
+        if (typeof window === 'undefined' || !window.location) {
+          this.container.style.display = '';
+          return;
+        }
+        
+        const currentPath = window.location.pathname;
+        const myBasePath = `/${this.basePath}/`;
+        const isMyRoute = currentPath.startsWith(myBasePath);
+        const isArticleRoute = currentPath.match(/^\/[^\/]+\/.+/);
+        
+        if (isMyRoute) {
+          this.container.style.display = '';
+        } else if (isArticleRoute) {
+          this.container.style.display = 'none';
+        } else {
+          this.container.style.display = '';
+        }
+      }
+
+      loadArticleFromUrl() {
+        this.updateContainerVisibility();
+        
+        const filePath = this.parseUrlForArticle();
+        
+        if (filePath) {
+          if (this.hideFilesOnRoute) {
+            this.hideFilesPanel();
+          }
+          
+          const fileExists = this.files.some(f => f.path === filePath);
+          if (fileExists) {
+            this.loadFile(filePath, true, true);
+          } else {
+            this.show404();
+          }
+          return;
+        }
+        
+        this.showFilesPanel();
+        
+        if (typeof window !== 'undefined' && window.location) {
+          const currentPath = window.location.pathname;
+          const isArticleRoute = currentPath.match(/^\/[^\/]+\/.+/);
+          
+          if (isArticleRoute) {
+            return;
+          }
+        }
+        
+        if (this.files.length > 0) {
+          this.loadFile(this.files[0].path, false, this.loadFirstFileAutomatically);
+        }
+      }
+
+      show404() {
+        const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
+        if (content) {
+          content.innerHTML = `<div class="${this.prefix}error">${this.texts.notFound}</div>`;
+        }
+      }
+
+      hideFilesPanel() {
+        const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+        if (mainContainer) {
+          mainContainer.classList.add('fullscreen-article');
+        }
+      }
+
+      showFilesPanel() {
+        const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+        if (mainContainer) {
+          mainContainer.classList.remove('fullscreen-article');
+        }
+      }
 
       processStyles(css) {
         const processed = css.replace(/\.lib-mp-/g, `.${this.prefix}`);
@@ -4823,6 +5230,11 @@
       }
 
       async loadDirectory() {
+        if (this.isLoadingDirectory) {
+          return;
+        }
+        
+        this.isLoadingDirectory = true;
         const filesList = this.container.querySelector(`[class~="${this.prefix}files-list"]`);
 
         try{
@@ -4842,7 +5254,9 @@
               return url.includes(normalizedPath);
             });
 
-            if (!validPath) {
+            if (!validPath && this.directoryRetryAttempts < this.maxDirectoryRetries) {
+              this.directoryRetryAttempts++;
+              this.isLoadingDirectory = false;
               setTimeout(() => {
                 this.loadDirectory();
               }, 1000);
@@ -4857,6 +5271,8 @@
             this.files = [];
           }
           
+          this.directoryRetryAttempts = 0;
+          
           if (this.sortAlphabetically) {
             this.sortFilesAlphabetically();
           }
@@ -4864,10 +5280,18 @@
           filesList.innerHTML = this.renderFileListHTML();
           this.attachFileListEvents();
           
-          if (this.files.length > 0) {
-            this.loadFile(this.files[0].path);
+          // Check if we should load article from URL (deep linking)
+          if (this.enableRouting) {
+            this.loadArticleFromUrl();
+          } else if (this.files.length > 0) {
+            // No routing - load first file, updateUrl based on loadFirstFileAutomatically
+            this.loadFile(this.files[0].path, false, this.loadFirstFileAutomatically);
           }
+          
+          this.isLoadingDirectory = false;
         } catch (error) {
+          this.isLoadingDirectory = false;
+          this.directoryRetryAttempts = 0;
           filesList.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
         }
       }
@@ -4894,12 +5318,18 @@
         const self = this;
         filesList.querySelectorAll(`[class~="${this.prefix}file"]`).forEach(item => {
           item.addEventListener('click', function() {
-            self.loadFile(this.dataset.path);
+            // When clicking in menu, respect loadFirstFileAutomatically setting for URL updates
+            self.loadFile(this.dataset.path, false, self.loadFirstFileAutomatically);
           });
         });
       }
 
-      async loadFile(path) {
+      async loadFile(path, fromUrl = false, updateUrl = true) {
+        if (this.isLoadingFile || this.currentFile === path) {
+          return;
+        }
+        
+        this.isLoadingFile = true;
         const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
         const files = this.container.querySelectorAll(`[class~="${this.prefix}file"]`);
         const progress = this.container.querySelector(`[class~="${this.prefix}progress"]`);
@@ -4912,21 +5342,45 @@
           const data = await this.fetchGitHubContents(path);
           const decodedContent = atob(data.content);
           const textContent = decodeURIComponent(escape(decodedContent));
+          
+          // Parse metadata from HTML comment
+          const metadata = this.parseMetadataFromComment(textContent);
+          const articleDate = metadata && metadata.date ? this.formatDate(metadata.date) : null;
+          
           const readingTime = this.calculateReadingTime(textContent);
           const htmlContent = marked(textContent);
-          const sanitizedHtml = purify.sanitize(htmlContent);
+          let sanitizedHtml = purify.sanitize(htmlContent);
+          
+          sanitizedHtml = sanitizedHtml.replace(
+            /<a\s+([^>]*?)>/gi,
+            (match, attributes) => {
+              if (attributes.includes('target=')) {
+                return match;
+              }
+              return `<a ${attributes} target="_blank" rel="noopener noreferrer">`;
+            }
+          );
+          
           let title = this.formatFileName(data.name);
           const firstH1 = textContent.match(/^#\s+(.+)$/m);
           if (firstH1) {
             title = firstH1[1].toUpperCase();
           }
+          
+          // Get full article URL for "open in new tab" button
+          const articleUrl = this.enableRouting ? this.getArticleUrlPath(path) : null;
+          const fullArticleUrl = articleUrl ? `${window.location.origin}${articleUrl}` : null;
+          
           content.innerHTML = createFileContentTemplate(
             title,
             readingTime,
             this.formatFileSize(data.size),
             sanitizedHtml,
             this.texts,
-            this.prefix
+            this.prefix,
+            this.showGitHubLink ? data.html_url : null,
+            articleDate,
+            fullArticleUrl
           );
           this.updateTextWidth();
           const body = content.querySelector(`[class~="${this.prefix}body"]`);
@@ -4937,8 +5391,21 @@
             progress.style.transform = `scaleX(${percentage})`;
           });
           this.currentFile = path;
+          
+          // Update URL if not coming from URL navigation and updateUrl is true
+          if (!fromUrl && updateUrl) {
+            this.updateUrlForArticle(path);
+          }
+          
+          this.isLoadingFile = false;
         } catch (error) {
+          this.isLoadingFile = false;
           content.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
+          
+          // Show 404 if file not found and routing is enabled
+          if (error.message.includes('404') || error.message.includes('Not Found')) {
+            this.show404();
+          }
         }
       }
 
@@ -4957,10 +5424,15 @@
         this.repo = repo;
         this.branch = options.branch || this.branch;
         this.path = options.path || this.path;
+        this.basePath = options.basePath || this.basePath;
+        this.isLoadingDirectory = false;
+        this.directoryRetryAttempts = 0;
         this.loadDirectory();
       }
 
       refresh() {
+        this.isLoadingDirectory = false;
+        this.directoryRetryAttempts = 0;
         this.loadDirectory();
       }
 
@@ -4968,6 +5440,13 @@
         if (window.viewerInstances && window.viewerInstances[this.containerId]) {
           delete window.viewerInstances[this.containerId];
         }
+        
+        // Remove popstate handler
+        if (this.popstateHandler) {
+          window.removeEventListener('popstate', this.popstateHandler);
+          this.popstateHandler = null;
+        }
+        
         this.container.innerHTML = '';
       }
     }

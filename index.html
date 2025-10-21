@@ -132,27 +132,28 @@
         <div class="demo-controls">
             <div>
                 <div class="control-group">
-                    <input type="text" id="owner" placeholder="Repository owner" value="facebook">
-                    <input type="text" id="repo" placeholder="Repository name" value="react">
+                    <input type="text" id="owner" placeholder="Repository owner" value="peterporzuczek">
+                    <input type="text" id="repo" placeholder="Repository name" value="echo">
                     <input type="text" id="path" placeholder="Path (optional)" value="">
                     <input type="text" id="branch" placeholder="Branch (optional)" value="">
+                    <input type="text" id="basePath" placeholder="Base path (optional)" value="blog">
                 </div>
                 
                 <div class="examples">
-                    <button class="example-btn" onclick="loadExample('facebook', 'react', '/', 'main')">
-                        React Docs
+                    <button class="example-btn" onclick="loadExample('PeterPorzuczek', 'echo', '/', 'main', 'blog')">
+                        My Blog
                     </button>
-                    <button class="example-btn" onclick="loadExample('vuejs', 'core', 'changelogs', 'main')">
+                    <button class="example-btn" onclick="loadExample('PeterPorzuczek', 'articles', 'articles-md', 'main', 'articles')">
+                        My articles
+                    </button>
+                    <button class="example-btn" onclick="loadExample('vuejs', 'core', 'changelogs', 'main', '')">
                         Vue.js Docs
                     </button>
-                    <button class="example-btn" onclick="loadExample('microsoft', 'TypeScript-Website', 'packages/documentation/copy/en/handbook-v2', 'v2')">
+                    <button class="example-btn" onclick="loadExample('microsoft', 'TypeScript-Website', 'packages/documentation/copy/en/handbook-v2', 'v2', '')">
                         TypeScript Docs
                     </button>
-                    <button class="example-btn" onclick="loadExample('nodejs', 'node', 'doc/api', 'main')">
+                    <button class="example-btn" onclick="loadExample('nodejs', 'node', 'doc/api', 'main', '')">
                         Node.js API
-                    </button>
-                    <button class="example-btn" onclick="loadExample('sveltejs', 'svelte', 'documentation/docs/01-introduction', 'main')">
-                        Svelte Docs
                     </button>
                 </div>
             </div>
@@ -169,10 +170,12 @@
         // Initialize the viewer
         let viewer = new MarkdownsPeek({
             containerId: 'markdown-viewer',
-            owner: 'facebook',
-            repo: 'react',
+            owner: 'PeterPorzuczek',
+            repo: 'echo',
+            basePath: "blog",
             theme: 'light',
-            token: ''
+            token: '',
+            loadFirstFileAutomatically: false  // Don't auto-load on homepage - wait for user to click
             // disableStyles: true  // Uncomment to use custom CSS instead of default styles
         });
         
@@ -182,18 +185,20 @@
             const repo = document.getElementById('repo').value;
             const path = document.getElementById('path').value;
             const branch = document.getElementById('branch').value;
+            const basePath = document.getElementById('basePath').value;
             
             if (owner && repo) {
-                viewer.setRepository(owner, repo, { path, branch });
+                viewer.setRepository(owner, repo, { path, branch, basePath });
             }
         }
         
         // Load example function
-        function loadExample(owner, repo, path, branch) {
+        function loadExample(owner, repo, path, branch, basePath) {
             document.getElementById('owner').value = owner;
             document.getElementById('repo').value = repo;
             document.getElementById('path').value = path;
             document.getElementById('branch').value = branch;
+            document.getElementById('basePath').value = basePath;
             loadRepository();
         }
         
