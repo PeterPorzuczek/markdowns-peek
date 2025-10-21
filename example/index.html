@@ -136,14 +136,15 @@
                     <input type="text" id="repo" placeholder="Repository name" value="echo">
                     <input type="text" id="path" placeholder="Path (optional)" value="">
                     <input type="text" id="branch" placeholder="Branch (optional)" value="">
+                    <input type="text" id="basePath" placeholder="Base path (optional)" value="blog">
                 </div>
                 
                 <div class="examples">
-                    <button class="example-btn" onclick="loadExample('PeterPorzuczek', 'echo', '/', 'main')">
+                    <button class="example-btn" onclick="loadExample('PeterPorzuczek', 'echo', '/', 'main', 'blog')">
                         My Blog
                     </button>
-                    <button class="example-btn" onclick="loadExample('facebook', 'react', '/', 'main')">
-                        React Docs
+                    <button class="example-btn" onclick="loadExample('PeterPorzuczek', 'articles', 'articles-md', 'main', 'articles')">
+                        My articles
                     </button>
                     <button class="example-btn" onclick="loadExample('vuejs', 'core', 'changelogs', 'main')">
                         Vue.js Docs
@@ -171,7 +172,7 @@
             containerId: 'markdown-viewer',
             owner: 'PeterPorzuczek',
             repo: 'echo',
-            basePath: "hejka",
+            basePath: "blog",
             theme: 'light',
             token: '',
             loadFirstFileAutomatically: false  // Don't auto-load on homepage - wait for user to click
@@ -184,18 +185,20 @@
             const repo = document.getElementById('repo').value;
             const path = document.getElementById('path').value;
             const branch = document.getElementById('branch').value;
+            const basePath = document.getElementById('basePath').value;
             
             if (owner && repo) {
-                viewer.setRepository(owner, repo, { path, branch });
+                viewer.setRepository(owner, repo, { path, branch, basePath });
             }
         }
         
         // Load example function
-        function loadExample(owner, repo, path, branch) {
+        function loadExample(owner, repo, path, branch, basePath) {
             document.getElementById('owner').value = owner;
             document.getElementById('repo').value = repo;
             document.getElementById('path').value = path;
             document.getElementById('branch').value = branch;
+            document.getElementById('basePath').value = basePath;
             loadRepository();
         }
         

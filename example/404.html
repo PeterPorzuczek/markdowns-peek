@@ -15,7 +15,8 @@
       height: 100vh;
       overflow: hidden;
     }
-    #markdown-viewer {
+    #markdown-viewer-blog,
+    #markdown-viewer-articles {
       width: 100%;
       height: 100vh;
     }
@@ -23,19 +24,17 @@
 </head>
 <body>
 
-  <div id="markdown-viewer"></div>
+  <div id="markdown-viewer-blog"></div>
+  <div id="markdown-viewer-articles"></div>
 
   <script src="/markdowns-peek.js"></script>
   <script>
-    const viewer = new MarkdownsPeek({
-      containerId: 'markdown-viewer',
-      owner: 'PeterPorzuczek',
-      repo: 'echo',
-      basePath: "hejka",
-      theme: 'dark',
+    // Common configuration
+    const commonConfig = {
+      
       height: '100%',
       token: '',
-      loadFirstFileAutomatically: true,  // Automatically load first article for deep linking
+      loadFirstFileAutomatically: true,
       hideFilesOnRoute: true,
       texts: {
         menu: 'MENU',
@@ -47,7 +46,48 @@
         minRead: 'MIN READ',
         notFound: 'ARTICLE NOT FOUND'
       }
+    };
+    
+    // Initialize first viewer for "blog" basePath with repo "echo"
+    const viewerblog = new MarkdownsPeek({
+      ...commonConfig,
+      containerId: 'markdown-viewer-blog',
+      theme: 'dark',
+      owner: 'PeterPorzuczek',
+      repo: 'echo',
+      basePath: 'blog'
     });
+    
+    // Initialize second viewer for "articles-md" basePath with repo "articles"
+    const viewerArticles = new MarkdownsPeek({
+      ...commonConfig,
+      containerId: 'markdown-viewer-articles',
+      theme: 'light',
+      owner: 'PeterPorzuczek',
+      repo: 'articles',
+      path: 'articles-md',
+      basePath: 'articles'
+    });
+    
+    // Additional logic to ensure at least one container is visible
+    function ensureVisibility() {
+      const blogContainer = document.getElementById('markdown-viewer-blog');
+      const articlesContainer = document.getElementById('markdown-viewer-articles');
+      
+      // If both are hidden (no URL match), show the first one by default
+      if (blogContainer && articlesContainer) {
+        const blogHidden = blogContainer.style.display === 'none';
+        const articlesHidden = articlesContainer.style.display === 'none';
+        
+        if (blogHidden && articlesHidden) {
+          blogContainer.style.display = '';
+        }
+      }
+    }
+    
+    // Check visibility after a short delay to allow widgets to initialize
+    setTimeout(ensureVisibility, 100);
+    window.addEventListener('popstate', () => setTimeout(ensureVisibility, 100));
   </script>
 
 </body>
