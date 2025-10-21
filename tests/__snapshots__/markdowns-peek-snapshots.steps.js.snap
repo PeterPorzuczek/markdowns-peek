@@ -12,6 +12,7 @@ exports[`MarkdownsPeek Snapshots Custom configuration HTML structure snapshot 1`
     "menu": "MENU",
     "minRead": "MIN READ",
     "noFiles": "Custom No Files",
+    "notFound": "ARTICLE NOT FOUND",
     "selectFile": "SELECT FILE TO VIEW",
   },
 }
@@ -29,6 +30,7 @@ exports[`MarkdownsPeek Snapshots Default HTML structure snapshot 1`] = `
     "menu": "MENU",
     "minRead": "MIN READ",
     "noFiles": "NO FILES FOUND",
+    "notFound": "ARTICLE NOT FOUND",
     "selectFile": "SELECT FILE TO VIEW",
   },
 }

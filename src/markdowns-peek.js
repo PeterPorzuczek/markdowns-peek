@@ -541,6 +541,11 @@ class MarkdownsPeek {
       return;
     }
     
+    if (typeof window === 'undefined' || !window.location) {
+      this.container.style.display = '';
+      return;
+    }
+    
     const currentPath = window.location.pathname;
     const myBasePath = `/${this.basePath}/`;
     const isMyRoute = currentPath.startsWith(myBasePath);
@@ -576,11 +581,13 @@ class MarkdownsPeek {
     
     this.showFilesPanel();
     
-    const currentPath = window.location.pathname;
-    const isArticleRoute = currentPath.match(/^\/[^\/]+\/.+/);
-    
-    if (isArticleRoute) {
-      return;
+    if (typeof window !== 'undefined' && window.location) {
+      const currentPath = window.location.pathname;
+      const isArticleRoute = currentPath.match(/^\/[^\/]+\/.+/);
+      
+      if (isArticleRoute) {
+        return;
+      }
     }
     
     if (this.files.length > 0) {
