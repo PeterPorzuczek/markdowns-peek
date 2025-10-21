@@ -21,6 +21,19 @@ export const styles = `
     overflow: hidden;
   }
   
+  .lib-mp-container.fullscreen-article .lib-mp-files {
+    display: none;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-menu-toggle {
+    display: none;
+  }
+  
+  .lib-mp-container.fullscreen-article .lib-mp-content {
+    width: 100%;
+    max-width: 100%;
+  }
+  
   .lib-mp-text * {
     max-width: 99%;
   }
@@ -541,6 +554,9 @@ export const styles = `
     .lib-mp-content {
       width: 100%;
       padding-top: 60px;
+    }
+    .lib-mp-container.fullscreen-article .lib-mp-content {
+      padding-top: 0;
     }
     .lib-mp-header {
       padding: 30px 20px 20px;

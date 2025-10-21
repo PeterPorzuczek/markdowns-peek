@@ -28,6 +28,8 @@ class MarkdownsPeek {
     this.showGitHubLink = options.showGitHubLink || false;
     this.basePath = options.basePath || null;
     this.enableRouting = options.enableRouting !== undefined ? options.enableRouting : (this.basePath !== null);
+    this.hideFilesOnRoute = options.hideFilesOnRoute !== undefined ? options.hideFilesOnRoute : true;
+    this.loadFirstFileAutomatically = options.loadFirstFileAutomatically !== undefined ? options.loadFirstFileAutomatically : true;
     this.texts = { ...defaultTexts, ...options.texts };
     this.prefix = options.prefix || generateDefaultPrefix();
     this.container = null;
@@ -494,9 +496,14 @@ class MarkdownsPeek {
     // Handle browser back/forward buttons
     this.popstateHandler = (event) => {
       if (event.state && event.state.filePath) {
-        this.loadFile(event.state.filePath, true);
+        // Navigating to an article - hide files if needed
+        if (this.hideFilesOnRoute) {
+          this.hideFilesPanel();
+        }
+        this.loadFile(event.state.filePath, true, true);
       } else {
-        // Return to base path without any file selected
+        // Return to base path without any file selected - show files panel
+        this.showFilesPanel();
         const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
         if (content) {
           content.innerHTML = `<div class="${this.prefix}empty">${this.texts.selectFile}</div>`;
@@ -513,18 +520,27 @@ class MarkdownsPeek {
   loadArticleFromUrl() {
     const filePath = this.parseUrlForArticle();
     if (filePath) {
+      // Article is in URL - hide files panel if option is enabled
+      if (this.hideFilesOnRoute) {
+        this.hideFilesPanel();
+      }
+      
       // Check if file exists in our list
       const fileExists = this.files.some(f => f.path === filePath);
       if (fileExists) {
-        this.loadFile(filePath, true);
+        this.loadFile(filePath, true, true);
       } else {
         // File doesn't exist - show 404
         this.show404();
       }
     } else {
-      // No article in URL - load first file if available
+      // No article in URL - show files panel
+      this.showFilesPanel();
+      
+      // Load first file based on loadFirstFileAutomatically option
       if (this.files.length > 0) {
-        this.loadFile(this.files[0].path, false);
+        // If loadFirstFileAutomatically is true, update URL. If false, don't update URL.
+        this.loadFile(this.files[0].path, false, this.loadFirstFileAutomatically);
       }
     }
   }
@@ -533,6 +549,20 @@ class MarkdownsPeek {
     const content = this.container.querySelector(`[class~="${this.prefix}content"]`);
     if (content) {
       content.innerHTML = `<div class="${this.prefix}error">${this.texts.notFound}</div>`;
+    }
+  }
+
+  hideFilesPanel() {
+    const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+    if (mainContainer) {
+      mainContainer.classList.add('fullscreen-article');
+    }
+  }
+
+  showFilesPanel() {
+    const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+    if (mainContainer) {
+      mainContainer.classList.remove('fullscreen-article');
     }
   }
 
@@ -618,8 +648,8 @@ class MarkdownsPeek {
       if (this.enableRouting) {
         this.loadArticleFromUrl();
       } else if (this.files.length > 0) {
-        // No routing - load first file as before
-        this.loadFile(this.files[0].path);
+        // No routing - load first file, updateUrl based on loadFirstFileAutomatically
+        this.loadFile(this.files[0].path, false, this.loadFirstFileAutomatically);
       }
       
       this.isLoadingDirectory = false;
@@ -652,12 +682,13 @@ class MarkdownsPeek {
     const self = this;
     filesList.querySelectorAll(`[class~="${this.prefix}file"]`).forEach(item => {
       item.addEventListener('click', function() {
-        self.loadFile(this.dataset.path);
+        // When clicking in menu, respect loadFirstFileAutomatically setting for URL updates
+        self.loadFile(this.dataset.path, false, self.loadFirstFileAutomatically);
       });
     });
   }
 
-  async loadFile(path, fromUrl = false) {
+  async loadFile(path, fromUrl = false, updateUrl = true) {
     if (this.isLoadingFile || this.currentFile === path) {
       return;
     }
@@ -725,8 +756,8 @@ class MarkdownsPeek {
       });
       this.currentFile = path;
       
-      // Update URL if not coming from URL navigation
-      if (!fromUrl) {
+      // Update URL if not coming from URL navigation and updateUrl is true
+      if (!fromUrl && updateUrl) {
         this.updateUrlForArticle(path);
       }
       
