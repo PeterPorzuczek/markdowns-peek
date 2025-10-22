@@ -32,7 +32,8 @@ const viewer = new MarkdownsPeek(container, {
   path: "articles-md",
   disableStyles: false,
   sortAlphabetically: false,
-  showGitHubLink: false, // Show external link icon (default: false)
+  showGitHubLink: false,
+  loadFirstFileAutomatically: false // As of now important to show without routing launched
   texts: {
     menu: 'Menu',
     files: 'Files',
