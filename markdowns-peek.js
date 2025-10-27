@@ -5399,7 +5399,8 @@
           this.updateUrlForArticle(path);
         }
         
-        if (fromUrl && this.hideFilesOnRoute) {
+        const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+        if (mainContainer && mainContainer.classList.contains('fullscreen-article')) {
           this.updateMetaTagsForFullscreen();
         }
         
@@ -5581,18 +5582,24 @@
       
       if (firstImage) {
         let imageUrl = firstImage;
-        if (firstImage.startsWith('/')) {
-          imageUrl = window.location.origin + firstImage;
-        } else if (!firstImage.startsWith('http://') && !firstImage.startsWith('https://')) {
-          imageUrl = window.location.origin + '/' + firstImage;
+        if (!firstImage.startsWith('http://') && !firstImage.startsWith('https://')) {
+          if (firstImage.startsWith('/')) {
+            imageUrl = window.location.protocol + '//' + window.location.host + firstImage;
+          } else {
+            imageUrl = window.location.protocol + '//' + window.location.host + '/' + firstImage;
+          }
         }
         this.setMetaTag('og:image', imageUrl);
+        this.setMetaTag('og:image:secure_url', imageUrl);
       }
       
       if (this.currentFile) {
-        const articleUrl = this.enableRouting && this.basePath ? 
-          `${window.location.origin}${this.getArticleUrlPath(this.currentFile)}` : 
-          window.location.href;
+        let articleUrl;
+        if (this.enableRouting && this.basePath) {
+          articleUrl = window.location.protocol + '//' + window.location.host + this.getArticleUrlPath(this.currentFile);
+        } else {
+          articleUrl = window.location.href;
+        }
         this.setMetaTag('og:url', articleUrl);
       }
     }
@@ -5630,6 +5637,10 @@
         const meta = document.querySelector('meta[property="og:image"]');
         if (meta) {
           meta.remove();
+        }
+        const secureMeta = document.querySelector('meta[property="og:image:secure_url"]');
+        if (secureMeta) {
+          secureMeta.remove();
         }
       }
       
