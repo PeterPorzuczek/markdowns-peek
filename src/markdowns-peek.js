@@ -568,6 +568,21 @@ class MarkdownsPeek {
     if (filePath) {
       if (this.hideFilesOnRoute) {
         this.hideFilesPanel();
+        
+        const fileName = filePath.split('/').pop();
+        const titleText = this.formatFileName(fileName);
+        
+        document.title = titleText;
+        this.setMetaTag('og:title', titleText);
+        
+        const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+        if (mainContainer && mainContainer.classList.contains('fullscreen-article')) {
+          setTimeout(() => {
+            if (this.currentFileContent) {
+              this.updateMetaTagsForFullscreen();
+            }
+          }, 0);
+        }
       }
       
       const fileExists = this.files.some(f => f.path === filePath);
@@ -613,6 +628,7 @@ class MarkdownsPeek {
     const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
     if (mainContainer) {
       mainContainer.classList.remove('fullscreen-article');
+      this.restoreOriginalMetaTags();
     }
   }
 
@@ -752,12 +768,36 @@ class MarkdownsPeek {
     });
     progress.style.transform = 'scaleX(0)';
     content.innerHTML = createLoadingTemplate(this.texts, this.prefix);
+    
+    const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+    const isFullscreen = mainContainer && mainContainer.classList.contains('fullscreen-article');
+    
+    if (isFullscreen && fromUrl) {
+      const fileName = path.split('/').pop();
+      const titleText = this.formatFileName(fileName);
+      const articleUrl = this.enableRouting ? 
+        `${window.location.protocol}//${window.location.host}${this.getArticleUrlPath(path)}` : 
+        window.location.href;
+      
+      document.title = titleText;
+      this.setMetaTag('og:title', titleText);
+      this.setMetaTag('og:url', articleUrl);
+      
+      const cachedContent = this.getCachedContent(path);
+      if (cachedContent) {
+        this.currentFileContent = cachedContent;
+        this.updateMetaTagsForFullscreen();
+      }
+    }
+    
     try {
       const data = await this.fetchGitHubContents(path);
       const decodedContent = atob(data.content);
       const textContent = decodeURIComponent(escape(decodedContent));
       
-      // Parse metadata from HTML comment
+      this.currentFileContent = textContent;
+      this.cacheContent(path, textContent);
+      
       const metadata = this.parseMetadataFromComment(textContent);
       const articleDate = metadata && metadata.date ? this.formatDate(metadata.date) : null;
       
@@ -806,9 +846,12 @@ class MarkdownsPeek {
       });
       this.currentFile = path;
       
-      // Update URL if not coming from URL navigation and updateUrl is true
       if (!fromUrl && updateUrl) {
         this.updateUrlForArticle(path);
+      }
+      
+      if (isFullscreen) {
+        this.updateMetaTagsForFullscreen();
       }
       
       this.isLoadingFile = false;
@@ -816,7 +859,6 @@ class MarkdownsPeek {
       this.isLoadingFile = false;
       content.innerHTML = createErrorTemplate(error.message, this.texts, this.prefix);
       
-      // Show 404 if file not found and routing is enabled
       if (error.message.includes('404') || error.message.includes('Not Found')) {
         this.show404();
       }
@@ -850,16 +892,264 @@ class MarkdownsPeek {
     this.loadDirectory();
   }
 
+  getCacheKey(path) {
+    return `mdp_content_${path}`;
+  }
+
+  getCachedContent(path) {
+    try {
+      const cached = localStorage.getItem(this.getCacheKey(path));
+      if (cached) {
+        return cached;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  cacheContent(path, content) {
+    try {
+      localStorage.setItem(this.getCacheKey(path), content);
+    } catch (e) {
+      if (e.name === 'QuotaExceededError') {
+        this.clearOldCache();
+      }
+    }
+  }
+
+  clearOldCache() {
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('mdp_content_')) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (e) {}
+  }
+
+  extractTitleFromMarkdown(content) {
+    const headingMatch = content.match(/^#{1,6}\s+(.+)$/m);
+    if (headingMatch) {
+      return headingMatch[1].trim();
+    }
+    return null;
+  }
+
+  extractDescriptionFromMarkdown(content) {
+    const lines = content.split('\n');
+    const paragraphs = [];
+    let currentParagraph = '';
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.match(/^#{1,6}\s/)) continue;
+      
+      if (!line) {
+        if (currentParagraph) {
+          paragraphs.push(currentParagraph.trim());
+          currentParagraph = '';
+        }
+        continue;
+      }
+      
+      if (line.startsWith('```')) continue;
+      
+      if (line.startsWith('- ') || line.startsWith('* ') || line.match(/^\d+\.\s/)) {
+        if (!currentParagraph) {
+          currentParagraph = line;
+        }
+        continue;
+      }
+      
+      if (currentParagraph) {
+        currentParagraph += ' ' + line;
+      } else {
+        currentParagraph = line;
+      }
+    }
+    
+    if (currentParagraph) {
+      paragraphs.push(currentParagraph.trim());
+    }
+    
+    const firstParagraph = paragraphs.find(p => p.length > 20 && !p.startsWith('!['));
+    
+    if (firstParagraph) {
+      let description = firstParagraph
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+        .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
+        .replace(/[#*_`<>]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (description.length > 160) {
+        description = description.substring(0, 157) + '...';
+      }
+      return description;
+    }
+    return null;
+  }
+
+  extractFirstImageFromMarkdown(content) {
+    const imageMatch = content.match(/!\[([^\]]*)\]\(([^\)]+)\)/);
+    if (imageMatch) {
+      return imageMatch[2];
+    }
+    return null;
+  }
+
+  getMetaTag(name) {
+    const meta = document.querySelector(`meta[property="${name}"]`) || 
+                 document.querySelector(`meta[name="${name}"]`);
+    return meta ? meta.getAttribute('content') : null;
+  }
+
+  setMetaTag(name, content) {
+    if (!content) return;
+    
+    let meta = document.querySelector(`meta[property="${name}"]`);
+    if (!meta) {
+      meta = document.querySelector(`meta[name="${name}"]`);
+    }
+    
+    if (!meta) {
+      meta = document.createElement('meta');
+      if (name.startsWith('og:')) {
+        meta.setAttribute('property', name);
+      } else {
+        meta.setAttribute('name', name);
+      }
+      document.head.appendChild(meta);
+    }
+    
+    meta.setAttribute('content', content);
+  }
+
+  storeOriginalMetaTags() {
+    if (!this.originalMetaTags) {
+      this.originalMetaTags = {
+        title: null,
+        ogTitle: null,
+        description: null,
+        ogImage: null,
+        ogUrl: null
+      };
+    }
+    
+    this.originalMetaTags.title = document.title;
+    this.originalMetaTags.ogTitle = this.getMetaTag('og:title');
+    this.originalMetaTags.description = this.getMetaTag('description');
+    this.originalMetaTags.ogImage = this.getMetaTag('og:image');
+    this.originalMetaTags.ogUrl = this.getMetaTag('og:url');
+  }
+
+  updateMetaTagsForFullscreen() {
+    if (!this.currentFileContent) return;
+    
+    const title = this.extractTitleFromMarkdown(this.currentFileContent);
+    const description = this.extractDescriptionFromMarkdown(this.currentFileContent);
+    const firstImage = this.extractFirstImageFromMarkdown(this.currentFileContent);
+    
+    if (!this.originalMetaTags || this.originalMetaTags.title === null) {
+      this.storeOriginalMetaTags();
+    }
+    
+    if (title) {
+      document.title = title;
+      this.setMetaTag('og:title', title);
+    }
+    
+    if (description) {
+      this.setMetaTag('description', description);
+      this.setMetaTag('og:description', description);
+    }
+    
+    if (firstImage) {
+      let imageUrl = firstImage;
+      if (!firstImage.startsWith('http://') && !firstImage.startsWith('https://')) {
+        if (firstImage.startsWith('/')) {
+          imageUrl = window.location.protocol + '//' + window.location.host + firstImage;
+        } else {
+          imageUrl = window.location.protocol + '//' + window.location.host + '/' + firstImage;
+        }
+      }
+      this.setMetaTag('og:image', imageUrl);
+      this.setMetaTag('og:image:secure_url', imageUrl);
+    }
+    
+    if (this.currentFile) {
+      let articleUrl;
+      if (this.enableRouting && this.basePath) {
+        articleUrl = window.location.protocol + '//' + window.location.host + this.getArticleUrlPath(this.currentFile);
+      } else {
+        articleUrl = window.location.href;
+      }
+      this.setMetaTag('og:url', articleUrl);
+    }
+  }
+
+  restoreOriginalMetaTags() {
+    if (!this.originalMetaTags) return;
+    
+    if (this.originalMetaTags.title !== null) {
+      document.title = this.originalMetaTags.title;
+    }
+    
+    if (this.originalMetaTags.ogTitle) {
+      this.setMetaTag('og:title', this.originalMetaTags.ogTitle);
+    } else {
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.remove();
+      }
+    }
+    
+    if (this.originalMetaTags.description) {
+      this.setMetaTag('description', this.originalMetaTags.description);
+      this.setMetaTag('og:description', this.originalMetaTags.description);
+    } else {
+      const meta = document.querySelector('meta[property="og:description"]') || 
+                   document.querySelector('meta[name="description"]');
+      if (meta) {
+        meta.remove();
+      }
+    }
+    
+    if (this.originalMetaTags.ogImage) {
+      this.setMetaTag('og:image', this.originalMetaTags.ogImage);
+    } else {
+      const meta = document.querySelector('meta[property="og:image"]');
+      if (meta) {
+        meta.remove();
+      }
+      const secureMeta = document.querySelector('meta[property="og:image:secure_url"]');
+      if (secureMeta) {
+        secureMeta.remove();
+      }
+    }
+    
+    if (this.originalMetaTags.ogUrl) {
+      this.setMetaTag('og:url', this.originalMetaTags.ogUrl);
+    } else {
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (ogUrl) {
+        ogUrl.remove();
+      }
+    }
+  }
+
   destroy() {
     if (window.viewerInstances && window.viewerInstances[this.containerId]) {
       delete window.viewerInstances[this.containerId];
     }
     
-    // Remove popstate handler
     if (this.popstateHandler) {
       window.removeEventListener('popstate', this.popstateHandler);
       this.popstateHandler = null;
     }
+    
+    this.restoreOriginalMetaTags();
     
     this.container.innerHTML = '';
   }
