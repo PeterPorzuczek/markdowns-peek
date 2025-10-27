@@ -5154,6 +5154,21 @@
       if (filePath) {
         if (this.hideFilesOnRoute) {
           this.hideFilesPanel();
+          
+          const fileName = filePath.split('/').pop();
+          const titleText = this.formatFileName(fileName);
+          
+          document.title = titleText;
+          this.setMetaTag('og:title', titleText);
+          
+          const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+          if (mainContainer && mainContainer.classList.contains('fullscreen-article')) {
+            setTimeout(() => {
+              if (this.currentFileContent) {
+                this.updateMetaTagsForFullscreen();
+              }
+            }, 0);
+          }
         }
         
         const fileExists = this.files.some(f => f.path === filePath);
@@ -5192,7 +5207,6 @@
       const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
       if (mainContainer) {
         mainContainer.classList.add('fullscreen-article');
-        this.updateMetaTagsForFullscreen();
       }
     }
 
@@ -5340,12 +5354,35 @@
       });
       progress.style.transform = 'scaleX(0)';
       content.innerHTML = createLoadingTemplate(this.texts, this.prefix);
+      
+      const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
+      const isFullscreen = mainContainer && mainContainer.classList.contains('fullscreen-article');
+      
+      if (isFullscreen && fromUrl) {
+        const fileName = path.split('/').pop();
+        const titleText = this.formatFileName(fileName);
+        const articleUrl = this.enableRouting ? 
+          `${window.location.protocol}//${window.location.host}${this.getArticleUrlPath(path)}` : 
+          window.location.href;
+        
+        document.title = titleText;
+        this.setMetaTag('og:title', titleText);
+        this.setMetaTag('og:url', articleUrl);
+        
+        const cachedContent = this.getCachedContent(path);
+        if (cachedContent) {
+          this.currentFileContent = cachedContent;
+          this.updateMetaTagsForFullscreen();
+        }
+      }
+      
       try {
         const data = await this.fetchGitHubContents(path);
         const decodedContent = atob(data.content);
         const textContent = decodeURIComponent(escape(decodedContent));
         
         this.currentFileContent = textContent;
+        this.cacheContent(path, textContent);
         
         const metadata = this.parseMetadataFromComment(textContent);
         const articleDate = metadata && metadata.date ? this.formatDate(metadata.date) : null;
@@ -5399,8 +5436,7 @@
           this.updateUrlForArticle(path);
         }
         
-        const mainContainer = this.container.querySelector(`[class~="${this.prefix}container"]`);
-        if (mainContainer && mainContainer.classList.contains('fullscreen-article')) {
+        if (isFullscreen) {
           this.updateMetaTagsForFullscreen();
         }
         
@@ -5440,6 +5476,41 @@
       this.isLoadingDirectory = false;
       this.directoryRetryAttempts = 0;
       this.loadDirectory();
+    }
+
+    getCacheKey(path) {
+      return `mdp_content_${path}`;
+    }
+
+    getCachedContent(path) {
+      try {
+        const cached = localStorage.getItem(this.getCacheKey(path));
+        if (cached) {
+          return cached;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    cacheContent(path, content) {
+      try {
+        localStorage.setItem(this.getCacheKey(path), content);
+      } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+          this.clearOldCache();
+        }
+      }
+    }
+
+    clearOldCache() {
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('mdp_content_')) {
+            localStorage.removeItem(key);
+          }
+        }
+      } catch (e) {}
     }
 
     extractTitleFromMarkdown(content) {
