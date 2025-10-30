@@ -5,6 +5,32 @@
 
 A beautiful GitHub Markdown file viewer for web applications.
 
+## Description
+
+MarkdownsPeek is a headless content provider that fetches Markdown files directly from GitHub repositories at runtime and renders them in your application. Instead of bundling static content or coupling copy updates to deploys, it decouples content from code so product teams can ship UI changes independently from editorial workflows.
+
+Key characteristics of the headless approach:
+
+- Content lives in GitHub: writers and developers collaborate via branches, reviews, and versioning without a custom CMS.
+- Runtime delivery: the widget retrieves a directory listing and individual Markdown files from the GitHub API on demand.
+- Client-rendered UI shell: your app provides the hosting surface; MarkdownsPeek handles listing, loading states, sanitization, and display.
+- Optional routing: deep links can point to specific articles; the widget can hide the file list to create a fullscreen article experience.
+- Progressive enhancement: initial UI mounts instantly; content loads asynchronously with visual feedback.
+
+Why this matters:
+
+- Faster content iteration: update Markdown in GitHub and see it live without redeploying the app.
+- Lower operational load: no servers or databases to run for content delivery.
+- Strong governance: use pull requests, code owners, and CI for quality and compliance.
+- Portable and embeddable: drop the widget into any site or microsite without changing your build pipeline.
+
+How it works at a glance:
+
+1. The widget mounts into a container and injects scoped styles using a unique prefix.
+2. It fetches a GitHub directory, filters `.md` files, and renders a selectable list.
+3. On selection or deep link, it fetches and sanitizes the Markdown, then renders it with reading-time and optional metadata (date from a header comment).
+4. With routing enabled, fullscreen mode can be used to present an article URL suitable for sharing or embedding.
+
 ## Preview
 
 ### [Live](https://peterporzuczek.github.io/markdowns-peek/)
