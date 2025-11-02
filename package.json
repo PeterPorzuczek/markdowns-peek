@@ -1,6 +1,6 @@
 {
   "name": "markdowns-peek",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "A beautiful GitHub Markdown file viewer for web applications",
   "main": "dist/markdowns-peek.js",
   "module": "dist/markdowns-peek.esm.js",
@@ -17,11 +17,11 @@
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
-
     "deploy": "gh-pages -d example",
     "predeploy": "npm run build && rimraf example/markdowns-peek.js && copyfiles -f dist/markdowns-peek.js example",
-    "preserve": "npm run build && rimraf example/markdowns-peek.js && copyfiles -f dist/markdowns-peek.js example",
-    "serve": "npx serve example"
+    "setup:serve": "npm run build && rimraf example/markdowns-peek.js && rimraf .serve-temp && copyfiles -f dist/markdowns-peek.js example && node -e \"const fs=require('fs');const path=require('path');fs.mkdirSync('.serve-temp/markdowns-peek',{recursive:true});fs.readdirSync('example').forEach(f=>fs.cpSync(path.join('example',f),path.join('.serve-temp/markdowns-peek',f),{recursive:true}));fs.writeFileSync('.serve-temp/serve.json',JSON.stringify({cleanUrls:false,directoryListing:false,rewrites:[{source:'/markdowns-peek',destination:'/markdowns-peek/index.html'},{source:'/markdowns-peek/',destination:'/markdowns-peek/index.html'},{source:'/markdowns-peek/blog/**',destination:'/markdowns-peek/404.html'},{source:'/markdowns-peek/articles/**',destination:'/markdowns-peek/404.html'}]},null,2));\"",
+    "serve": "npm run setup:serve && npx serve .serve-temp -p 3000",
+    "postserve": "rimraf .serve-temp"
   },
   "keywords": [
     "github",
