@@ -7,5 +7,6 @@ export const defaultTexts = {
   error: 'ERROR: ',
   noFiles: 'NO FILES FOUND',
   minRead: 'MIN READ',
-  notFound: 'ARTICLE NOT FOUND'
+  notFound: 'ARTICLE NOT FOUND',
+  author: 'AUTHOR'
 }; 

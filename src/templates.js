@@ -27,13 +27,14 @@ export const createFileTemplate = (file, index, displayName, size, prefix) => `
   </div>
 `;
 
-export const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl, articleDate, articleUrl) => `
+export const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl, articleDate, articleUrl, articleAuthor) => `
   <header class="${prefix}header">
     <h1 class="${prefix}title" title="${title}">${title}</h1>
     <div class="${prefix}header-row">
       <div class="${prefix}info">
         <span>${readingTime} ${texts.minRead}</span>
         ${articleDate ? `<span>${articleDate}</span>` : `<span>${fileSize}</span>`}
+        ${articleAuthor ? `<span>${texts.author}: ${articleAuthor}</span>` : ''}
       </div>
       <div class="${prefix}header-actions">
         ${articleUrl ? `

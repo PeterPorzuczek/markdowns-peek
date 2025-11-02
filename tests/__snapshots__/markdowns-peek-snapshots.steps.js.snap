@@ -6,6 +6,7 @@ exports[`MarkdownsPeek Snapshots Custom configuration HTML structure snapshot 1`
   "customConfig": true,
   "prefix": "custom-prefix",
   "texts": {
+    "author": "AUTHOR",
     "error": "Custom Error: ",
     "files": "FILES",
     "loading": "Custom Loading...",
@@ -24,6 +25,7 @@ exports[`MarkdownsPeek Snapshots Default HTML structure snapshot 1`] = `
   "prefix": "default-prefix",
   "styles": undefined,
   "texts": {
+    "author": "AUTHOR",
     "error": "ERROR: ",
     "files": "FILES",
     "loading": "LOADING...",

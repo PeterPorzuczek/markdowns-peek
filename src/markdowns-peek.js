@@ -408,6 +408,12 @@ class MarkdownsPeek {
       metadata.date = dateMatch[1].replace(/[\u2010-\u2015]/g, '-');
     }
     
+    // Parse author - support both with and without quotes
+    const authorMatch = metadataText.match(/author:\s*["']?([^"'\n]+)["']?/);
+    if (authorMatch) {
+      metadata.author = authorMatch[1].trim();
+    }
+    
     // Parse title
     const titleMatch = metadataText.match(/title:\s*["']([^"']+)["']/);
     if (titleMatch) {
@@ -760,6 +766,7 @@ class MarkdownsPeek {
       // Parse metadata from HTML comment
       const metadata = this.parseMetadataFromComment(textContent);
       const articleDate = metadata && metadata.date ? this.formatDate(metadata.date) : null;
+      const articleAuthor = metadata && metadata.author ? metadata.author : null;
       
       const readingTime = this.calculateReadingTime(textContent);
       const htmlContent = marked(textContent);
@@ -794,7 +801,8 @@ class MarkdownsPeek {
         this.prefix,
         this.showGitHubLink ? data.html_url : null,
         articleDate,
-        fullArticleUrl
+        fullArticleUrl,
+        articleAuthor
       );
       this.updateTextWidth();
       const body = content.querySelector(`[class~="${this.prefix}body"]`);

@@ -35,6 +35,7 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+.serve-temp/
 
 # Logs
 logs/

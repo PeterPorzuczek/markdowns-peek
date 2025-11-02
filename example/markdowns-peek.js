@@ -4481,7 +4481,8 @@
       error: 'ERROR: ',
       noFiles: 'NO FILES FOUND',
       minRead: 'MIN READ',
-      notFound: 'ARTICLE NOT FOUND'
+      notFound: 'ARTICLE NOT FOUND',
+      author: 'AUTHOR'
     };
 
     const generateRandomChars = (length = 8) => {
@@ -4525,13 +4526,14 @@
   </div>
 `;
 
-    const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl, articleDate, articleUrl) => `
+    const createFileContentTemplate = (title, readingTime, fileSize, sanitizedHtml, texts, prefix, htmlUrl, articleDate, articleUrl, articleAuthor) => `
   <header class="${prefix}header">
     <h1 class="${prefix}title" title="${title}">${title}</h1>
     <div class="${prefix}header-row">
       <div class="${prefix}info">
         <span>${readingTime} ${texts.minRead}</span>
         ${articleDate ? `<span>${articleDate}</span>` : `<span>${fileSize}</span>`}
+        ${articleAuthor ? `<span>${texts.author}: ${articleAuthor}</span>` : ''}
       </div>
       <div class="${prefix}header-actions">
         ${articleUrl ? `
@@ -4994,6 +4996,12 @@
           metadata.date = dateMatch[1].replace(/[\u2010-\u2015]/g, '-');
         }
         
+        // Parse author - support both with and without quotes
+        const authorMatch = metadataText.match(/author:\s*["']?([^"'\n]+)["']?/);
+        if (authorMatch) {
+          metadata.author = authorMatch[1].trim();
+        }
+        
         // Parse title
         const titleMatch = metadataText.match(/title:\s*["']([^"']+)["']/);
         if (titleMatch) {
@@ -5346,6 +5354,7 @@
           // Parse metadata from HTML comment
           const metadata = this.parseMetadataFromComment(textContent);
           const articleDate = metadata && metadata.date ? this.formatDate(metadata.date) : null;
+          const articleAuthor = metadata && metadata.author ? metadata.author : null;
           
           const readingTime = this.calculateReadingTime(textContent);
           const htmlContent = marked(textContent);
@@ -5380,7 +5389,8 @@
             this.prefix,
             this.showGitHubLink ? data.html_url : null,
             articleDate,
-            fullArticleUrl
+            fullArticleUrl,
+            articleAuthor
           );
           this.updateTextWidth();
           const body = content.querySelector(`[class~="${this.prefix}body"]`);

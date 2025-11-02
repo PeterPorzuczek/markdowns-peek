@@ -111,6 +111,7 @@ npm run dev
 
 # Serve examples
 npm run serve
+# After running serve, open http://localhost:3000/markdowns-peek in your browser
 ```
 
 ## GitHub Actions
