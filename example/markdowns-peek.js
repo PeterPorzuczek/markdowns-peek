@@ -5035,15 +5035,13 @@
         return `${day} ${month} ${year}`;
       }
 
-      // Routing functions
       getArticleUrlPath(filePath) {
         if (!this.enableRouting || !this.basePath) {
           return null;
         }
         
-        // Encode file path for URL
-        const encodedPath = encodeURIComponent(filePath);
-        return `/${this.basePath}/${encodedPath}`;
+        const urlPath = filePath.replace(/\s+/g, '-');
+        return `/${this.basePath}/${urlPath}`;
       }
 
       parseUrlForArticle() {
@@ -5058,14 +5056,31 @@
           return null;
         }
         
-        // Extract and decode file path
         const encodedPath = pathname.substring(basePrefix.length);
+        
         try {
           return decodeURIComponent(encodedPath);
         } catch (e) {
           console.error('Failed to decode article path:', e);
           return null;
         }
+      }
+
+      normalizePathForComparison(path) {
+        return path.replace(/[-\s]+/g, '').toLowerCase();
+      }
+
+      findMatchingFilePath(urlPath) {
+        const urlPathFilename = urlPath.split('/').pop();
+        const normalizedUrl = this.normalizePathForComparison(urlPathFilename);
+        
+        const matchingFile = this.files.find(f => {
+          const filename = f.name || f.path.split('/').pop();
+          const normalizedFilename = this.normalizePathForComparison(filename);
+          return normalizedFilename === normalizedUrl;
+        });
+        
+        return matchingFile ? matchingFile.path : null;
       }
 
       updateUrlForArticle(filePath, replace = false) {
@@ -5157,16 +5172,16 @@
       loadArticleFromUrl() {
         this.updateContainerVisibility();
         
-        const filePath = this.parseUrlForArticle();
+        const urlPath = this.parseUrlForArticle();
         
-        if (filePath) {
+        if (urlPath) {
           if (this.hideFilesOnRoute) {
             this.hideFilesPanel();
           }
           
-          const fileExists = this.files.some(f => f.path === filePath);
-          if (fileExists) {
-            this.loadFile(filePath, true, true);
+          const matchingFilePath = this.findMatchingFilePath(urlPath);
+          if (matchingFilePath) {
+            this.loadFile(matchingFilePath, true, true);
           } else {
             this.show404();
           }
@@ -5451,13 +5466,14 @@
           delete window.viewerInstances[this.containerId];
         }
         
-        // Remove popstate handler
         if (this.popstateHandler) {
           window.removeEventListener('popstate', this.popstateHandler);
           this.popstateHandler = null;
         }
         
-        this.container.innerHTML = '';
+        if (this.container) {
+          this.container.innerHTML = '';
+        }
       }
     }
 
