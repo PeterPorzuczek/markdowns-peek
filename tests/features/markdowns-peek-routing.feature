@@ -36,9 +36,17 @@ Feature: MarkdownsPeek Routing with Hyphens and Spaces
     When I generate URL for a file with spaces
     Then the URL should use hyphens instead of spaces
     And the URL should include the base path
+    And the URL should not include .md extension
 
   Scenario: Handle URL encoded spaces
     Given I have a MarkdownsPeek instance with files loaded
     When I search for a file with URL encoded spaces
     Then the correct file path should be returned
+
+  Scenario: Find matching file path without .md extension
+    Given I have a MarkdownsPeek instance with files loaded
+    When I search for a file without .md extension
+    Then the correct file path should be returned
+    And it should work with hyphens
+    And it should work with spaces
 

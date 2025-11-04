@@ -5040,7 +5040,7 @@
           return null;
         }
         
-        const urlPath = filePath.replace(/\s+/g, '-');
+        const urlPath = filePath.replace(/\s+/g, '-').replace(/\.md$/i, '');
         return `/${this.basePath}/${urlPath}`;
       }
 
@@ -5067,7 +5067,7 @@
       }
 
       normalizePathForComparison(path) {
-        return path.replace(/[-\s]+/g, '').toLowerCase();
+        return path.replace(/[-\s]+/g, '').replace(/\.md$/i, '').toLowerCase();
       }
 
       findMatchingFilePath(urlPath) {

@@ -40,17 +40,17 @@ defineFeature(feature, test => {
 
     then('paths with hyphens should be normalized correctly', () => {
       const result = markdownsPeek.normalizePathForComparison('No-Codefall-Myth.md');
-      expect(result).toBe('nocodefallmyth.md');
+      expect(result).toBe('nocodefallmyth');
     });
 
     and('paths with spaces should be normalized correctly', () => {
       const result = markdownsPeek.normalizePathForComparison('No Codefall Myth.md');
-      expect(result).toBe('nocodefallmyth.md');
+      expect(result).toBe('nocodefallmyth');
     });
 
     and('paths with mixed hyphens and spaces should be normalized correctly', () => {
       const result = markdownsPeek.normalizePathForComparison('No-Codefall Myth.md');
-      expect(result).toBe('nocodefallmyth.md');
+      expect(result).toBe('nocodefallmyth');
     });
   });
 
@@ -164,12 +164,18 @@ defineFeature(feature, test => {
 
     then('the URL should use hyphens instead of spaces', () => {
       const result = markdownsPeek.getArticleUrlPath('My Article File.md');
-      expect(result).toBe('/blog/My-Article-File.md');
+      expect(result).toBe('/blog/My-Article-File');
     });
 
     and('the URL should include the base path', () => {
       const result = markdownsPeek.getArticleUrlPath('Test.md');
       expect(result).toContain('/blog/');
+    });
+
+    and('the URL should not include .md extension', () => {
+      const result = markdownsPeek.getArticleUrlPath('Test.md');
+      expect(result).toBe('/blog/Test');
+      expect(result).not.toContain('.md');
     });
   });
 
@@ -192,6 +198,39 @@ defineFeature(feature, test => {
     then('the correct file path should be returned', () => {
       const result = markdownsPeek.findMatchingFilePath('Signals of Absence.md');
       expect(result).toBe('blog/Signals of Absence.md');
+    });
+  });
+
+  test('Find matching file path without .md extension', ({ given, when, then, and }) => {
+    given('I have a MarkdownsPeek instance with files loaded', () => {
+      markdownsPeek = new MarkdownsPeek({ 
+        containerId: 'test-routing-container',
+        disableStyles: true
+      });
+      markdownsPeek.files = [
+        { name: 'No-Codefall Myth.md', path: 'blog/No-Codefall Myth.md' },
+        { name: 'Test Article.md', path: 'blog/Test Article.md' }
+      ];
+      expect(markdownsPeek.files.length).toBe(2);
+    });
+
+    when('I search for a file without .md extension', () => {
+      expect(markdownsPeek.findMatchingFilePath).toBeDefined();
+    });
+
+    then('the correct file path should be returned', () => {
+      const result = markdownsPeek.findMatchingFilePath('No-Codefall Myth');
+      expect(result).toBe('blog/No-Codefall Myth.md');
+    });
+
+    and('it should work with hyphens', () => {
+      const result = markdownsPeek.findMatchingFilePath('No-Codefall-Myth');
+      expect(result).toBe('blog/No-Codefall Myth.md');
+    });
+
+    and('it should work with spaces', () => {
+      const result = markdownsPeek.findMatchingFilePath('Test Article');
+      expect(result).toBe('blog/Test Article.md');
     });
   });
 });
