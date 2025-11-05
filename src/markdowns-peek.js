@@ -25,6 +25,7 @@ class MarkdownsPeek {
     this.height = options.height || '600px';
     this.disableStyles = options.disableStyles || false;
     this.sortAlphabetically = options.sortAlphabetically || false;
+    this.reverseSortOrder = options.reverseSortOrder || false;
     this.showGitHubLink = options.showGitHubLink || false;
     this.basePath = options.basePath || null;
     this.enableRouting = options.enableRouting !== undefined ? options.enableRouting : (this.basePath !== null);
@@ -734,7 +735,13 @@ class MarkdownsPeek {
 
 
   sortFilesAlphabetically() {
-    this.files.sort((a, b) => a.name.localeCompare(b.name));
+    this.files.sort((a, b) => {
+      const comparison = a.name.localeCompare(b.name, undefined, { 
+        numeric: true, 
+        sensitivity: 'base' 
+      });
+      return this.reverseSortOrder ? -comparison : comparison;
+    });
   }
 
   renderFileListHTML() {
